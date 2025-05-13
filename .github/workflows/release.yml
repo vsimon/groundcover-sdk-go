@@ -1,4 +1,7 @@
 name: Release SDK
+permissions:
+  contents: write
+  packages: write
 
 on:
   workflow_dispatch:
