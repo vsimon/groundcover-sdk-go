@@ -2,6 +2,9 @@ name: Release SDK
 permissions:
   contents: write
   packages: write
+concurrency:
+  group: release-${{ github.workflow }}
+  cancel-in-progress: true
 
 on:
   workflow_dispatch:
