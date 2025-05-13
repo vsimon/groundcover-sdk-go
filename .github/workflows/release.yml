@@ -13,6 +13,16 @@ on:
         description: 'Commit hash to release (default: latest)'
         required: false
         default: 'latest'
+      isPatchVersion:
+        description: 'Bump patch version instead of minor'
+        required: false
+        type: boolean
+        default: false
+      isMajorVersion:
+        description: 'Bump major version instead of minor'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   release:
@@ -33,6 +43,11 @@ jobs:
         env:
           COMMIT_HASH: ${{ github.event.inputs.commit_hash }}
         run: |
+          # Clean up the SDK to only include the necessary files
+          rm -rf pkg/client
+          rm -rf pkg/models
+
+          # Download the SDK
           FILE_URL="https://groundcover-openapi-sdk-bucket.s3.us-east-1.amazonaws.com/groundcover-sdk-${COMMIT_HASH}.tar.gz"
           echo "Downloading from ${FILE_URL}"
           curl -L -o groundcover-sdk.tar.gz "${FILE_URL}"
@@ -57,29 +72,55 @@ jobs:
       - name: Bump version and create tag
         id: version_bump
         run: |
-          # Create VERSION file if it doesn't exist
-          if [ ! -f VERSION ]; then
-            echo "v1.0.0" > VERSION
+          # Guardrail for input combinations
+          if [ "${{ github.event.inputs.isMajorVersion }}" = "true" ] && [ "${{ github.event.inputs.isPatchVersion }}" = "true" ]; then
+            echo "Error: Cannot set both isMajorVersion and isPatchVersion to true. Please choose only one type of bump or neither (for minor bump)."
+            exit 1
           fi
-          CURRENT_VERSION=$(cat VERSION)
-          # Remove 'v' prefix if it exists for parsing
-          CURRENT_VERSION_NUM=${CURRENT_VERSION#v}
 
-          # Simple SemVer bump: increment minor version
-          # Assumes format like vX.Y.Z or X.Y.Z
-          IFS='.' read -r -a VERSION_PARTS <<< "$CURRENT_VERSION_NUM"
-          MAJOR=${VERSION_PARTS[0]}
-          MINOR=${VERSION_PARTS[1]}
-          PATCH=${VERSION_PARTS[2]}
+          if [ ! -f VERSION ]; then
+            echo "VERSION file not found. Creating with v1.0.0."
+            NEW_VERSION="v1.0.0"
+            # For the output, this indicates the state before this step's main action or the initial state.
+            PREVIOUS_VERSION_INFO="N/A (file created with $NEW_VERSION)"
+            echo "$NEW_VERSION" > VERSION
+            echo "Set initial version to: $NEW_VERSION"
+          else
+            OLD_VERSION_FROM_FILE=$(cat VERSION)
+            PREVIOUS_VERSION_INFO="$OLD_VERSION_FROM_FILE"
+            echo "Current version from file: $OLD_VERSION_FROM_FILE"
 
-          NEW_MINOR=$((MINOR + 1))
-          NEW_VERSION="v${MAJOR}.${NEW_MINOR}.${PATCH}"
+            VERSION_NUM_NO_V=${OLD_VERSION_FROM_FILE#v} # Remove 'v' prefix
+            IFS='.' read -r -a VERSION_PARTS <<< "$VERSION_NUM_NO_V"
+            MAJOR=${VERSION_PARTS[0]:-0} # Default to 0 if empty
+            MINOR=${VERSION_PARTS[1]:-0} # Default to 0 if empty
+            PATCH=${VERSION_PARTS[2]:-0} # Default to 0 if empty
 
-          echo "Current version: $CURRENT_VERSION"
-          echo "New version: $NEW_VERSION"
-          echo "$NEW_VERSION" > VERSION
+            # Decide which version part to bump based on inputs
+            if [ "${{ github.event.inputs.isMajorVersion }}" = "true" ]; then
+              echo "Bumping major version..."
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+            elif [ "${{ github.event.inputs.isPatchVersion }}" = "true" ]; then
+              echo "Bumping patch version..."
+              PATCH=$((PATCH + 1))
+              # Major and Minor remain unchanged
+            else # Default: Bump minor version
+              echo "Bumping minor version..."
+              MINOR=$((MINOR + 1))
+              PATCH=0
+            fi
+
+            NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
+
+            echo "$NEW_VERSION" > VERSION
+            echo "Bumped version to: $NEW_VERSION"
+          fi
+
+          # GitHub Actions outputs
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "current_version=$PREVIOUS_VERSION_INFO" >> $GITHUB_OUTPUT
 
           git add VERSION
           git commit -m "Bump version to ${NEW_VERSION}"
