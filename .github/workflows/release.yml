@@ -70,8 +70,8 @@ jobs:
           echo "Current version: $CURRENT_VERSION"
           echo "New version: $NEW_VERSION"
           echo "$NEW_VERSION" > VERSION
-          echo "::set-output name=new_version::$NEW_VERSION"
-          echo "::set-output name=current_version::$CURRENT_VERSION"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
 
           git add VERSION
           git commit -m "Bump version to ${NEW_VERSION}"
