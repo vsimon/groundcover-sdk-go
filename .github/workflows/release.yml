@@ -34,6 +34,8 @@ jobs:
           echo "Downloading from ${FILE_URL}"
           curl -L -o groundcover-sdk.tar.gz "${FILE_URL}"
           tar -xzf groundcover-sdk.tar.gz
+          # Verify SDK builds successfully
+          go mod tidy
           rm groundcover-sdk.tar.gz
 
       - name: Commit Changes
