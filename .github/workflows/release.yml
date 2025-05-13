@@ -15,15 +15,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          # Checkout the branch/ref the workflow was triggered on
-          # We need to fetch all history and tags to be able to bump the version correctly
           ref: ${{ github.ref }}
-          fetch-depth: 0 # Fetch all history for version bumping
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: '1.x' # Specify your Go version
+          go-version: '1.24'
 
       - name: Download and Extract SDK
         env:
@@ -92,4 +90,3 @@ jobs:
             Automated release for version ${{ steps.version_bump.outputs.new_version }}.
             Released from commit: ${{ github.event.inputs.commit_hash }}
           draft: false
-          prerelease: true # Mark as pre-release 
