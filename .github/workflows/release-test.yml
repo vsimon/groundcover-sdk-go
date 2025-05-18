@@ -54,8 +54,20 @@ jobs:
           fi
           echo "Using commit hash: $COMMIT_HASH"
 
+          # Set default values for version control flags
+          IS_PATCH_VERSION="${{ github.event.inputs.isPatchVersion }}"
+          IS_MAJOR_VERSION="${{ github.event.inputs.isMajorVersion }}"
+          if [ -z "$IS_PATCH_VERSION" ]; then
+            IS_PATCH_VERSION="false"
+          fi
+          if [ -z "$IS_MAJOR_VERSION" ]; then
+            IS_MAJOR_VERSION="false"
+          fi
+          echo "Using isPatchVersion: $IS_PATCH_VERSION"
+          echo "Using isMajorVersion: $IS_MAJOR_VERSION"
+
           # Guardrail for input combinations
-          if [ "${{ github.event.inputs.isMajorVersion }}" = "true" ] && [ "${{ github.event.inputs.isPatchVersion }}" = "true" ]; then
+          if [ "$IS_MAJOR_VERSION" = "true" ] && [ "$IS_PATCH_VERSION" = "true" ]; then
             echo "Error: Cannot set both isMajorVersion and isPatchVersion to true. Please choose only one type of bump or neither (for minor bump)."
             exit 1
           fi
@@ -91,12 +103,12 @@ jobs:
             MINOR=${VERSION_PARTS[1]:-0}
             PATCH=${VERSION_PARTS[2]:-0}
 
-            if [ "${{ github.event.inputs.isMajorVersion }}" = "true" ]; then
+            if [ "$IS_MAJOR_VERSION" = "true" ]; then
               echo "Bumping major version..."
               MAJOR=$((MAJOR + 1))
               MINOR=0
               PATCH=0
-            elif [ "${{ github.event.inputs.isPatchVersion }}" = "true" ]; then
+            elif [ "$IS_PATCH_VERSION" = "true" ]; then
               echo "Bumping patch version..."
               PATCH=$((PATCH + 1))
             else
