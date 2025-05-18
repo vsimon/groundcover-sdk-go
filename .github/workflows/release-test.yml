@@ -65,6 +65,9 @@ jobs:
           fi
           echo "Using isPatchVersion: $IS_PATCH_VERSION"
           echo "Using isMajorVersion: $IS_MAJOR_VERSION"
+          
+          # Export variables for later steps
+          echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
 
           # Guardrail for input combinations
           if [ "$IS_MAJOR_VERSION" = "true" ] && [ "$IS_PATCH_VERSION" = "true" ]; then
