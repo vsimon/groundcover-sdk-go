@@ -137,7 +137,7 @@ jobs:
             echo "committed=false" >> $GITHUB_OUTPUT
           else
             echo "Changes detected. Committing and pushing..."
-            COMMIT_MSG="Update SDK to version ${{ steps.version_logic.outputs.new_version }} (SDK source: ${{ github.event.inputs.commit_hash }})"
+            COMMIT_MSG="Update SDK to version ${{ steps.version_logic.outputs.new_version }} (SDK source: ${{ env.COMMIT_HASH }})"
             git commit -m "$COMMIT_MSG"
             git push
             echo "committed=true" >> $GITHUB_OUTPUT
@@ -161,6 +161,6 @@ jobs:
           release_name: "Release ${{ steps.version_logic.outputs.new_version }}"
           body: |
             Automated release for version ${{ steps.version_logic.outputs.new_version }}.
-            SDK source commit: ${{ github.event.inputs.commit_hash }}
+            SDK source commit: ${{ env.COMMIT_HASH }}
             Previous version: ${{ steps.version_logic.outputs.current_version }}
           draft: true
