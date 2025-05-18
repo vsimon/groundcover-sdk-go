@@ -1,45 +1,36 @@
-# Groundcover Go SDK
+# groundcover Go SDK
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/groundcover-com/groundcover-sdk-go.svg)](https://pkg.go.dev/github.com/groundcover-com/groundcover-sdk-go)
+This is the official Go SDK for interacting with the groundcover API. It provides convenient access to groundcover's services, including metrics queries and policy management.
 
-The official Go SDK for interacting with the Groundcover API.
+## Prerequisites
 
-## Overview
-
-This SDK provides convenient Go interfaces for various Groundcover API endpoints, including RBAC (API Keys, Policies, Service Accounts), Metrics, Monitors, and Kubernetes cluster/workload information.
+*   Go 1.24 or higher.
 
 ## Installation
 
-To use the SDK in your Go project, install it using `go get`:
+To use the SDK in your Go project, you can install it using `go get`:
 
 ```bash
 go get github.com/groundcover-com/groundcover-sdk-go
 ```
 
-## Development
+## Configuration
 
-To contribute or work on the SDK locally:
+### Environment Variables
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/groundcover-com/groundcover-sdk-go.git
-    cd groundcover-sdk-go
-    ```
-2.  **Make your changes.**
-3.  **Ensure dependencies are tidy:**
-    ```bash
-    go mod tidy
-    ```
+The SDK requires the following environment variables to be set for authentication and endpoint configuration:
 
-## Usage
+*   `GC_BASE_URL`: The base URL of the groundcover API (e.g., `https://api.groundcover.com`).
+*   `GC_API_KEY`: Your groundcover API key.
+*   `GC_BACKEND_ID`: Your groundcover Backend ID.
+
+Optionally, you can set:
+
+*   `GC_TRACEPARENT`: A default traceparent header value for distributed tracing.
 
 ### Client Initialization
 
-To use the SDK, you need to initialize an API client. The client requires your Groundcover Base URL, API Key, and Backend ID. It's recommended to provide these via environment variables:
-
-*   `GC_BASE_URL`: The base URL of your Groundcover API endpoint.
-*   `GC_API_KEY`: Your Groundcover API key.
-*   `GC_BACKEND_ID`: Your Groundcover Backend ID.
+The SDK client requires a configured transport stack that handles authentication, retries, and other custom behaviors. Here's an example of how to set up the client:
 
 ```go
 package main
@@ -47,16 +38,28 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
+	"net/url"
 	"os"
+	"strings"
+	"time"
 
-	"github.com/groundcover-com/groundcover-sdk-go/sdk/api"
-	"github.com/groundcover-com/groundcover-sdk-go/sdk/api/rbac/apikeys"
-	"github.com/groundcover-com/groundcover-sdk-go/sdk/httpclient"
+	client "github.com/groundcover-com/groundcover-sdk-go/pkg/client"
+	"github.com/groundcover-com/groundcover-sdk-go/pkg/transport"
+	"github.com/go-openapi/runtime/client"
+	"github.com/go-openapi/strfmt"
+)
+
+const (
+	defaultTimeout    = 30 * time.Second
+	defaultRetryCount = 5
+	minRetryWait      = 1 * time.Second
+	maxRetryWait      = 5 * time.Second
 )
 
 func main() {
-	baseURL := os.Getenv("GC_BASE_URL")
-	if baseURL == "" {
+	baseURLStr := os.Getenv("GC_BASE_URL")
+	if baseURLStr == "" {
 		log.Fatal("GC_BASE_URL environment variable is required")
 	}
 
@@ -70,124 +73,171 @@ func main() {
 		log.Fatal("GC_BACKEND_ID environment variable is required")
 	}
 
-	// Optional client options (e.g., for tracing)
-	clientOpts := []httpclient.ClientOption{}
-	traceparent := os.Getenv("GC_TRACEPARENT")
-	if traceparent != "" {
-		clientOpts = append(clientOpts, httpclient.WithTraceparent(traceparent))
+	traceparent := os.Getenv("GC_TRACEPARENT") // Optional, applied to context if set
+
+	// Parse baseURL for go-openapi transport config
+	parsedURL, err := url.Parse(baseURLStr)
+	if err != nil {
+		log.Fatalf("Error parsing GC_BASE_URL: %v", err)
 	}
 
-	// Initialize the API client
-	client := api.NewClient(baseURL, apiKey, backendID, clientOpts...)
+	host := parsedURL.Host
+	basePath := parsedURL.Path
+	if basePath == "" {
+		basePath = client.DefaultBasePath // Use default if path is empty
+	}
+	if !strings.HasPrefix(basePath, "/") && basePath != "" {
+		basePath = "/" + basePath
+	}
 
-	// Now you can use the client to interact with different services
-	// Example: Use the RBAC API Key service
-	listApiKeysExample(client.Rbac.Apikeys)
+	schemes := []string{parsedURL.Scheme}
+	if len(schemes) == 0 || schemes[0] == "" {
+		schemes = client.DefaultSchemes // Use default if scheme is missing
+	}
+
+	// --- Transport Stack Construction ---
+
+	// 1. Base HTTP Transport (from go's net/http)
+	baseHttpTransport := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		// Configure other standard transport settings if needed (e.g., TLS, timeouts)
+	}
+
+	// 2. Custom Transport (handles auth, Gzip, retries)
+	//    The retry logic is built into NewTransport.
+	transportWrapper := transport.NewTransport(
+		apiKey,
+		backendID,
+		baseHttpTransport, // The underlying transport
+		defaultRetryCount, // Max number of retries
+		minRetryWait,      // Minimum wait time between retries
+		maxRetryWait,      // Maximum wait time between retries
+		// Specify statuses to retry on, or pass nil/empty for defaults
+		[]int{http.StatusServiceUnavailable, http.StatusTooManyRequests, http.StatusGatewayTimeout, http.StatusBadGateway},
+	)
+
+	// 3. Final OpenAPI Runtime Transport
+	finalRuntimeTransport := client.New(host, basePath, schemes)
+	finalRuntimeTransport.Transport = transportWrapper // Set our custom transport
+
+	// --- Client Initialization ---
+	sdkClient := client.New(finalRuntimeTransport, strfmt.Default)
+
+	// Now you can use sdkClient to make API calls
+	// Example: sdkClient.Metrics.MetricsQuery(...)
 }
-
-func listApiKeysExample(apiKeyService *apikeys.Service) {
-    // Example usage is shown in the Examples section below
-}
-
 ```
 
-### Services
+## Usage
 
-The client provides access to different API services:
+### Making an API Call
 
-*   `client.K8s`: Interact with Kubernetes cluster and workload endpoints.
-*   `client.Metrics`: Query metrics data.
-*   `client.Monitors`: Manage monitors.
-*   `client.Rbac`: Manage Role-Based Access Control:
-    *   `client.Rbac.Apikeys`: Manage API Keys.
-    *   `client.Rbac.Policies`: Manage RBAC Policies.
-    *   `client.Rbac.Serviceaccounts`: Manage Service Accounts.
-
-## Examples
-
-Here are a few examples demonstrating how to use the SDK:
-
-### List API Keys
-
-List all API keys, optionally including revoked or expired ones.
+Here's an example of how to make a metrics query:
 
 ```go
-func listApiKeys(apiKeyService *apikeys.Service) {
-	ctx := context.Background()
+	// (Continued from Client Initialization above)
+	// --- API Call: Metrics Query ---
+	// import models "github.com/groundcover-com/groundcover-sdk-go/pkg/models"
+	// import metrics "github.com/groundcover-com/groundcover-sdk-go/pkg/client/metrics"
+	// import "github.com/sirupsen/logrus"
+	// import "github.com/davecgh/go-spew/spew"
 
-	// List only active keys
-	activeKeys, err := apiKeyService.ListApiKeys(ctx, nil, nil)
+	baseCtx := context.Background()
+
+	logrus.Info("--- Calling Metrics Query ---")
+
+	// Prepare the request body for the metrics query
+	startTime := strfmt.DateTime(time.Now().Add(-time.Hour))
+	endTime := strfmt.DateTime(time.Now())
+	step := "30s"
+	queryType := "instant"
+	promqlQuery := "avg(groundcover_container_cpu_limit_m_cpu)"
+
+	queryRequestBody := &models.QueryRequest{
+		Start:     startTime,
+		End:       endTime,
+		Step:      step,
+		QueryType: queryType,
+		Promql:    promqlQuery,
+	}
+
+	// Prepare the parameters for metrics query
+	metricsParams := metrics.NewMetricsQueryParams().
+		WithContext(baseCtx).
+		WithTimeout(defaultTimeout). // Overall request timeout
+		WithBody(queryRequestBody)
+
+	// Execute the metrics query
+	// The second argument (nil) is for AuthInfoWriter, as authentication is handled by our custom transport.
+	queryResponse, err := sdkClient.Metrics.MetricsQuery(metricsParams, nil)
 	if err != nil {
-		log.Fatalf("Error listing active API keys: %v", err)
-	}
-	log.Println("Active API Keys:")
-	for _, key := range activeKeys {
-		log.Printf("  ID: %s, Name: %s, ServiceAccountID: %s\n", key.Id, key.Name, key.ServiceAccountId)
+		// Handle errors (see Error Handling section)
+		logrus.Errorf("Error executing metrics query: %v", err)
+		return
 	}
 
-	// List keys including revoked and expired ones
-	withRevoked := true
-	withExpired := true
-	allKeys, err := apiKeyService.ListApiKeys(ctx, &withRevoked, &withExpired)
-	if err != nil {
-		log.Fatalf("Error listing all API keys: %v", err)
-	}
-	log.Println("\nAll API Keys (including revoked/expired):")
-	for _, key := range allKeys {
-		log.Printf("  ID: %s, Name: %s, Revoked: %v, Expired: %v\n", key.Id, key.Name, key.RevokedAt != nil, key.ExpiredAt != nil)
-	}
-}
-
-// In your main function or setup:
-// listApiKeys(client.Rbac.Apikeys)
+	// Handle the successful metrics response payload
+	logrus.Info("Metrics Query Response:")
+	spew.Dump(queryResponse.Payload) // queryResponse.Payload contains the data
 ```
 
-### Create an API Key
+### Context for Request Overrides
 
-Create a new API key associated with a specific Service Account.
+The `pkg/transport` module provides functions to set request-specific values, such as a traceparent, using `context.Context`.
+
+*   **Traceparent**: Set a specific `traceparent` header for a request.
+    ```go
+    // Set a specific traceparent for this request
+    metricsCtx := transport.WithRequestTraceparent(baseCtx, "00-customtraceid-customspanid-01")
+    // ... then use metricsCtx in NewMetricsQueryParams().WithContext(metricsCtx)
+    ```
+
+### Retry Mechanism
+
+The SDK's custom transport has a built-in retry mechanism that automatically retries requests on transient server errors (e.g., `503 Service Unavailable`, `429 Too Many Requests`). This is configured during client initialization via `transport.NewTransport`.
+
+### Error Handling
+
+API calls can return errors. It's important to handle these appropriately. The SDK uses specific error types for different API responses, and also a generic `runtime.APIError`.
 
 ```go
-func createApiKey(apiKeyService *apikeys.Service, serviceAccountID string) {
-	ctx := context.Background()
-	createReq := &apikeys.CreateApiKeyRequest{
-		Name:             "my-sdk-generated-key",
-		ServiceAccountId: serviceAccountID, // Replace with a valid Service Account ID
-		Description:      "API Key created via Go SDK example",
-	}
+	// import "github.com/go-openapi/runtime"
+	// import metrics "github.com/groundcover-com/groundcover-sdk-go/pkg/client/metrics"
 
-	response, err := apiKeyService.CreateApiKey(ctx, createReq)
+	// (inside an API call block like the metrics query example)
+	// queryResponse, err := sdkClient.Metrics.MetricsQuery(metricsParams, nil)
 	if err != nil {
-		log.Fatalf("Error creating API key: %v", err)
+		switch e := err.(type) {
+		case *metrics.MetricsQueryBadRequest: // Example specific error
+			logrus.Errorf("Metrics API Error (Bad Request): %s, Payload: %v", e.Error(), e.Payload)
+		case *metrics.MetricsQueryInternalServerError: // Example specific error
+			logrus.Errorf("Metrics API Error (Internal Server Error): %s, Payload: %v", e.Error(), e.Payload)
+		default:
+			if apiErr, ok := err.(*runtime.APIError); ok {
+				// This is a generic error from the go-openapi runtime
+				// apiErr.Code gives the HTTP status code
+				// apiErr.Response gives the raw response body (needs to be parsed or read)
+				logrus.Errorf("Generic API Error: Code %d, Message: %s, Response: %v", apiErr.Code, apiErr.Error(), apiErr.Response)
+			} else {
+				// Other unexpected errors
+				logrus.Errorf("Error executing API call: %v", err)
+			}
+		}
+		return // Or handle as appropriate
 	}
-
-	log.Println("Successfully created API Key:")
-	log.Printf("Key ID: %s", response.Id)
-	log.Println("API Key (only shown once):", response.ApiKey)
-}
-
-// In your main function or setup:
-// serviceAccountID := "YOUR_SERVICE_ACCOUNT_ID" // Replace with an actual ID
-// createApiKey(client.Rbac.Apikeys, serviceAccountID)
+	// Process successful response: queryResponse.Payload
 ```
 
-### Delete an API Key
+## Available Services
 
-Delete an API key by its ID.
+The SDK is organized by service, available under the `sdkClient` object. For example:
 
-```go
-func deleteApiKey(apiKeyService *apikeys.Service, keyID string) {
-	ctx := context.Background()
+*   `sdkClient.Metrics`: For querying metrics.
+*   `sdkClient.Policies`: For managing policies (example was commented out in `main.go` but shows the pattern).
 
-	_, err := apiKeyService.DeleteApiKey(ctx, keyID) // Replace with the ID of the key to delete
-	if err != nil {
-		log.Fatalf("Error deleting API key %s: %v", keyID, err)
-	}
+Refer to the generated SDK code in the `pkg/client` directory for a full list of services and their operations.
 
-	log.Printf("Successfully deleted API Key with ID: %s", keyID)
-}
+## License
 
-// In your main function or setup:
-// keyIDToDelete := "YOUR_API_KEY_ID_TO_DELETE" // Replace with an actual ID
-// deleteApiKey(client.Rbac.Apikeys, keyIDToDelete)
+This SDK is distributed under the Apache License, Version 2.0. See the [LICENSE](LICENSE) file for more information.
 
-```
