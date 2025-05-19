@@ -19,26 +19,96 @@ import (
 // swagger:model Policy
 type Policy struct {
 
+	// Optional claim role for the policy.
+	ClaimRole string `json:"claimRole,omitempty"`
+
+	// Email of the user who created the policy.
+	// Read Only: true
+	CreatedBy string `json:"createdBy,omitempty"`
+
+	// Timestamp when the policy was created.
+	// Read Only: true
+	// Format: date-time
+	CreatedTimestamp strfmt.DateTime `json:"createdTimestamp,omitempty"`
+
+	// Optional description of the policy.
+	Description string `json:"description,omitempty"`
+
 	// Name of the policy.
 	// Required: true
 	Name *string `json:"name"`
 
+	// Indicates if the policy is read-only (system managed).
+	// Read Only: true
+	ReadOnly *bool `json:"readOnly,omitempty"`
+
+	// Revision number for optimistic locking.
+	// Read Only: true
+	RevisionNumber int32 `json:"revisionNumber,omitempty"`
+
+	// Tenant associated with the policy.
+	// Read Only: true
+	TenantUUID string `json:"tenantUuid,omitempty"`
+
 	// Unique identifier for the policy.
 	// Read Only: true
 	UUID string `json:"uuid,omitempty"`
+
+	// Email of the user who last updated the policy.
+	// Read Only: true
+	UpdatedBy string `json:"updatedBy,omitempty"`
+
+	// Timestamp when the policy was last updated.
+	// Read Only: true
+	// Format: date-time
+	UpdatedTimestamp strfmt.DateTime `json:"updatedTimestamp,omitempty"`
+
+	// data scope
+	DataScope *DataScope `json:"dataScope,omitempty"`
+
+	// role
+	Role RoleMap `json:"role,omitempty"`
 }
 
 // Validate validates this policy
 func (m *Policy) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateCreatedTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateUpdatedTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDataScope(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateRole(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *Policy) validateCreatedTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.CreatedTimestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("createdTimestamp", "body", "date-time", m.CreatedTimestamp.String(), formats); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -51,11 +121,97 @@ func (m *Policy) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Policy) validateUpdatedTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.UpdatedTimestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("updatedTimestamp", "body", "date-time", m.UpdatedTimestamp.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Policy) validateDataScope(formats strfmt.Registry) error {
+	if swag.IsZero(m.DataScope) { // not required
+		return nil
+	}
+
+	if m.DataScope != nil {
+		if err := m.DataScope.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("dataScope")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("dataScope")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Policy) validateRole(formats strfmt.Registry) error {
+	if swag.IsZero(m.Role) { // not required
+		return nil
+	}
+
+	if m.Role != nil {
+		if err := m.Role.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("role")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("role")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ContextValidate validate this policy based on the context it is used
 func (m *Policy) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateCreatedBy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCreatedTimestamp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateReadOnly(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRevisionNumber(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTenantUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateUUID(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUpdatedBy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUpdatedTimestamp(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDataScope(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRole(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -65,9 +221,111 @@ func (m *Policy) ContextValidate(ctx context.Context, formats strfmt.Registry) e
 	return nil
 }
 
+func (m *Policy) contextValidateCreatedBy(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "createdBy", "body", string(m.CreatedBy)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Policy) contextValidateCreatedTimestamp(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "createdTimestamp", "body", strfmt.DateTime(m.CreatedTimestamp)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Policy) contextValidateReadOnly(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "readOnly", "body", m.ReadOnly); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Policy) contextValidateRevisionNumber(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "revisionNumber", "body", int32(m.RevisionNumber)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Policy) contextValidateTenantUUID(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "tenantUuid", "body", string(m.TenantUUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (m *Policy) contextValidateUUID(ctx context.Context, formats strfmt.Registry) error {
 
 	if err := validate.ReadOnly(ctx, "uuid", "body", string(m.UUID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Policy) contextValidateUpdatedBy(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "updatedBy", "body", string(m.UpdatedBy)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Policy) contextValidateUpdatedTimestamp(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "updatedTimestamp", "body", strfmt.DateTime(m.UpdatedTimestamp)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Policy) contextValidateDataScope(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.DataScope != nil {
+
+		if swag.IsZero(m.DataScope) { // not required
+			return nil
+		}
+
+		if err := m.DataScope.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("dataScope")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("dataScope")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Policy) contextValidateRole(ctx context.Context, formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Role) { // not required
+		return nil
+	}
+
+	if err := m.Role.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("role")
+		} else if ce, ok := err.(*errors.CompositeError); ok {
+			return ce.ValidateName("role")
+		}
 		return err
 	}
 

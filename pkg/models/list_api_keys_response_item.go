@@ -48,7 +48,7 @@ type ListAPIKeysResponseItem struct {
 	Name string `json:"name,omitempty"`
 
 	// Policies associated with the service account owning this key.
-	Policies []*Policy `json:"policies"`
+	Policies []*PolicyRef `json:"policies"`
 
 	// Timestamp when the key was revoked (null if active).
 	// Format: date-time

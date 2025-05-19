@@ -34,7 +34,7 @@ type ServiceAccountsWithPolicy struct {
 	Name string `json:"name,omitempty"`
 
 	// Policies assigned to the service account.
-	Policies []*Policy `json:"policies"`
+	Policies []*PolicyRef `json:"policies"`
 
 	// The UUID of the service account.
 	ServiceAccountID string `json:"serviceAccountId,omitempty"`
