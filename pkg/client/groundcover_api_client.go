@@ -12,10 +12,10 @@ import (
 
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/apikeys"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/k8s"
+	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/logs_pipeline"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/metrics"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/monitors"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/policies"
-	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/remoteconfig"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/serviceaccounts"
 )
 
@@ -63,10 +63,10 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *Groundcove
 	cli.Transport = transport
 	cli.Apikeys = apikeys.New(transport, formats)
 	cli.K8s = k8s.New(transport, formats)
+	cli.LogsPipeline = logs_pipeline.New(transport, formats)
 	cli.Metrics = metrics.New(transport, formats)
 	cli.Monitors = monitors.New(transport, formats)
 	cli.Policies = policies.New(transport, formats)
-	cli.Remoteconfig = remoteconfig.New(transport, formats)
 	cli.Serviceaccounts = serviceaccounts.New(transport, formats)
 	return cli
 }
@@ -116,13 +116,13 @@ type GroundcoverAPI struct {
 
 	K8s k8s.ClientService
 
+	LogsPipeline logs_pipeline.ClientService
+
 	Metrics metrics.ClientService
 
 	Monitors monitors.ClientService
 
 	Policies policies.ClientService
-
-	Remoteconfig remoteconfig.ClientService
 
 	Serviceaccounts serviceaccounts.ClientService
 
@@ -134,9 +134,9 @@ func (c *GroundcoverAPI) SetTransport(transport runtime.ClientTransport) {
 	c.Transport = transport
 	c.Apikeys.SetTransport(transport)
 	c.K8s.SetTransport(transport)
+	c.LogsPipeline.SetTransport(transport)
 	c.Metrics.SetTransport(transport)
 	c.Monitors.SetTransport(transport)
 	c.Policies.SetTransport(transport)
-	c.Remoteconfig.SetTransport(transport)
 	c.Serviceaccounts.SetTransport(transport)
 }
