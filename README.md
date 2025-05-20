@@ -181,6 +181,60 @@ Here's an example of how to make a metrics query:
 	spew.Dump(queryResponse.Payload) // queryResponse.Payload contains the data
 ```
 
+### Building Conditions for Queries
+
+When making API calls that accept a list of conditions (e.g., for filtering events or certain types of metrics), the SDK provides a convenient way to build these conditions using the `ConditionSet` helper located in the `pkg/utils` package. This builder simplifies creating the `[]*models.Condition` slice.
+
+The `pkg/types` package (e.g., `github.com/groundcover-com/groundcover-sdk-go/pkg/types`) contains predefined constants for common condition keys, values, and operators.
+
+Here's how to use the `ConditionSet`:
+
+```go
+// import (
+// 	"github.com/groundcover-com/groundcover-sdk-go/pkg/models"
+// 	"github.com/groundcover-com/groundcover-sdk-go/pkg/types"
+// 	"github.com/groundcover-com/groundcover-sdk-go/pkg/utils"
+// )
+
+func getMyQueryConditions(namespace, podName string) []*models.Condition {
+    cs := utils.NewConditionSet() // Initializes with default origin, type, and operator (eq)
+
+    // Add a condition for namespace using default settings
+    cs.Add(types.ConditionKeyNamespace, namespace)
+
+    // Add a condition for pod name using default settings
+    cs.Add(types.ConditionKeyPodName, podName)
+
+    // Add predefined conditions for OOMKilled events
+    cs.AddOOMEventConditions()
+
+    // If you need to specify non-default parameters for a condition:
+    // cs.AddFull(
+    // 	types.ConditionKeyWorkload,      // Key
+    // 	"customOrigin",                // Origin
+    // 	"customType",                  // Type
+    // 	"myWorkloadName",              // Value
+    // 	types.OperatorContains,        // Operator
+    // )
+
+    return cs.Build() // Returns []*models.Condition
+}
+
+// Later, when preparing your query, you would use these conditions:
+// queryRequestBody := &models.QueryRequest{
+// 		Conditions: getMyQueryConditions("my-namespace", "my-pod-123"),
+// 		// ... other query parameters ...
+// }
+```
+
+Key methods for `ConditionSet`:
+
+*   `utils.NewConditionSet()`: Creates a new condition set with defaults (Origin: `ConditionOriginRoot`, Type: `ConditionTypeString`, Operator: `OperatorEqual`).
+*   `cs.Add(key, value string)`: Adds a condition using the default origin, type, and operator.
+*   `cs.AddFull(key, origin, condType, value, opStr string)`: Adds a condition with explicitly specified parameters.
+*   `cs.AddOOMEventConditions()`: A helper to add the standard conditions for detecting OOM events (Reason: `OOMKilled` and Type: `container_crash`).
+*   `cs.Build()`: Returns the final `[]*models.Condition` slice.
+
 ### Context for Request Overrides
 
 The `pkg/transport` module provides functions to set request-specific values, such as a traceparent, using `context.Context`.
