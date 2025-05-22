@@ -67,7 +67,7 @@ type UpdateConfigParams struct {
 
 	   The configuration to create or update
 	*/
-	Body *models.CreateOrUpdateConfigRequest
+	Body *models.CreateOrUpdateLogsPipelineConfigRequest
 
 	timeout    time.Duration
 	Context    context.Context
@@ -123,13 +123,13 @@ func (o *UpdateConfigParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithBody adds the body to the update config params
-func (o *UpdateConfigParams) WithBody(body *models.CreateOrUpdateConfigRequest) *UpdateConfigParams {
+func (o *UpdateConfigParams) WithBody(body *models.CreateOrUpdateLogsPipelineConfigRequest) *UpdateConfigParams {
 	o.SetBody(body)
 	return o
 }
 
 // SetBody adds the body to the update config params
-func (o *UpdateConfigParams) SetBody(body *models.CreateOrUpdateConfigRequest) {
+func (o *UpdateConfigParams) SetBody(body *models.CreateOrUpdateLogsPipelineConfigRequest) {
 	o.Body = body
 }
 

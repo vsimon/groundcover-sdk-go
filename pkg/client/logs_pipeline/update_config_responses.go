@@ -55,10 +55,10 @@ func NewUpdateConfigOK() *UpdateConfigOK {
 /*
 UpdateConfigOK describes a response with status code 200, with default header values.
 
-manageConfigResponse contains a configuration entry
+logsPipelineConfigResponse contains a logs pipeline configuration entry
 */
 type UpdateConfigOK struct {
-	Payload *models.ManageConfigResponseEntry
+	Payload *models.LogsPipelineConfig
 }
 
 // IsSuccess returns true when this update config o k response has a 2xx status code
@@ -101,13 +101,13 @@ func (o *UpdateConfigOK) String() string {
 	return fmt.Sprintf("[PUT /api/pipelines/logs/config][%d] updateConfigOK %s", 200, payload)
 }
 
-func (o *UpdateConfigOK) GetPayload() *models.ManageConfigResponseEntry {
+func (o *UpdateConfigOK) GetPayload() *models.LogsPipelineConfig {
 	return o.Payload
 }
 
 func (o *UpdateConfigOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ManageConfigResponseEntry)
+	o.Payload = new(models.LogsPipelineConfig)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -125,7 +125,7 @@ func NewUpdateConfigBadRequest() *UpdateConfigBadRequest {
 /*
 UpdateConfigBadRequest describes a response with status code 400, with default header values.
 
-emptyResponse is used for empty responses
+emptyLogsPipelineConfigResponse is used for empty responses
 */
 type UpdateConfigBadRequest struct {
 	Payload interface{}
@@ -193,7 +193,7 @@ func NewUpdateConfigInternalServerError() *UpdateConfigInternalServerError {
 /*
 UpdateConfigInternalServerError describes a response with status code 500, with default header values.
 
-emptyResponse is used for empty responses
+emptyLogsPipelineConfigResponse is used for empty responses
 */
 type UpdateConfigInternalServerError struct {
 	Payload interface{}

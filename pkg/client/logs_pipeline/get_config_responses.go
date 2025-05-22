@@ -55,10 +55,10 @@ func NewGetConfigOK() *GetConfigOK {
 /*
 GetConfigOK describes a response with status code 200, with default header values.
 
-manageConfigResponse contains a configuration entry
+logsPipelineConfigResponse contains a logs pipeline configuration entry
 */
 type GetConfigOK struct {
-	Payload *models.ManageConfigResponseEntry
+	Payload *models.LogsPipelineConfig
 }
 
 // IsSuccess returns true when this get config o k response has a 2xx status code
@@ -101,13 +101,13 @@ func (o *GetConfigOK) String() string {
 	return fmt.Sprintf("[GET /api/pipelines/logs/config][%d] getConfigOK %s", 200, payload)
 }
 
-func (o *GetConfigOK) GetPayload() *models.ManageConfigResponseEntry {
+func (o *GetConfigOK) GetPayload() *models.LogsPipelineConfig {
 	return o.Payload
 }
 
 func (o *GetConfigOK) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ManageConfigResponseEntry)
+	o.Payload = new(models.LogsPipelineConfig)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -125,7 +125,7 @@ func NewGetConfigNoContent() *GetConfigNoContent {
 /*
 GetConfigNoContent describes a response with status code 204, with default header values.
 
-emptyResponse is used for empty responses
+emptyLogsPipelineConfigResponse is used for empty responses
 */
 type GetConfigNoContent struct {
 	Payload interface{}
@@ -193,7 +193,7 @@ func NewGetConfigInternalServerError() *GetConfigInternalServerError {
 /*
 GetConfigInternalServerError describes a response with status code 500, with default header values.
 
-emptyResponse is used for empty responses
+emptyLogsPipelineConfigResponse is used for empty responses
 */
 type GetConfigInternalServerError struct {
 	Payload interface{}

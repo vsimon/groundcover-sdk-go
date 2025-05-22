@@ -47,7 +47,7 @@ func NewDeleteConfigOK() *DeleteConfigOK {
 /*
 DeleteConfigOK describes a response with status code 200, with default header values.
 
-emptyResponse is used for empty responses
+emptyLogsPipelineConfigResponse is used for empty responses
 */
 type DeleteConfigOK struct {
 	Payload interface{}
@@ -115,7 +115,7 @@ func NewDeleteConfigInternalServerError() *DeleteConfigInternalServerError {
 /*
 DeleteConfigInternalServerError describes a response with status code 500, with default header values.
 
-emptyResponse is used for empty responses
+emptyLogsPipelineConfigResponse is used for empty responses
 */
 type DeleteConfigInternalServerError struct {
 	Payload interface{}

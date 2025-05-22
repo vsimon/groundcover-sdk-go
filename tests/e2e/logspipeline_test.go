@@ -28,7 +28,7 @@ func TestRemoteConfigLogsPipelineCrudE2E(t *testing.T) {
 	ctx, apiClient := setupTestClient(t)
 
 	// 1. CREATE - Create a new logs pipeline configuration
-	createBody := &models.CreateOrUpdateConfigRequest{
+	createBody := &models.CreateOrUpdateLogsPipelineConfigRequest{
 		Value: testConfigValue,
 	}
 
@@ -65,7 +65,7 @@ func TestRemoteConfigLogsPipelineCrudE2E(t *testing.T) {
 	assert.Equal(t, testConfigValue, getRespOk.Payload.Value, "Retrieved config value should match the created one")
 
 	// 3. UPDATE - Update the logs pipeline configuration
-	updateBody := &models.CreateOrUpdateConfigRequest{
+	updateBody := &models.CreateOrUpdateLogsPipelineConfigRequest{
 		Value: testConfigValueUpdated,
 	}
 
@@ -107,5 +107,4 @@ func TestRemoteConfigLogsPipelineCrudE2E(t *testing.T) {
 	require.NoError(t, err, "Get deleted config request failed")
 	require.Nil(t, getRespNoContent, "Should get a 204 No Content response")
 	require.Equal(t, getRespOk.Payload.Value, "", "Should get the same config value")
-
 }

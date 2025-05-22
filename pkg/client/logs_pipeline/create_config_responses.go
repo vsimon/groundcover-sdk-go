@@ -55,10 +55,10 @@ func NewCreateConfigCreated() *CreateConfigCreated {
 /*
 CreateConfigCreated describes a response with status code 201, with default header values.
 
-manageConfigResponse contains a configuration entry
+logsPipelineConfigResponse contains a logs pipeline configuration entry
 */
 type CreateConfigCreated struct {
-	Payload *models.ManageConfigResponseEntry
+	Payload *models.LogsPipelineConfig
 }
 
 // IsSuccess returns true when this create config created response has a 2xx status code
@@ -101,13 +101,13 @@ func (o *CreateConfigCreated) String() string {
 	return fmt.Sprintf("[POST /api/pipelines/logs/config][%d] createConfigCreated %s", 201, payload)
 }
 
-func (o *CreateConfigCreated) GetPayload() *models.ManageConfigResponseEntry {
+func (o *CreateConfigCreated) GetPayload() *models.LogsPipelineConfig {
 	return o.Payload
 }
 
 func (o *CreateConfigCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.ManageConfigResponseEntry)
+	o.Payload = new(models.LogsPipelineConfig)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
@@ -125,7 +125,7 @@ func NewCreateConfigBadRequest() *CreateConfigBadRequest {
 /*
 CreateConfigBadRequest describes a response with status code 400, with default header values.
 
-emptyResponse is used for empty responses
+emptyLogsPipelineConfigResponse is used for empty responses
 */
 type CreateConfigBadRequest struct {
 	Payload interface{}
@@ -193,7 +193,7 @@ func NewCreateConfigInternalServerError() *CreateConfigInternalServerError {
 /*
 CreateConfigInternalServerError describes a response with status code 500, with default header values.
 
-emptyResponse is used for empty responses
+emptyLogsPipelineConfigResponse is used for empty responses
 */
 type CreateConfigInternalServerError struct {
 	Payload interface{}
