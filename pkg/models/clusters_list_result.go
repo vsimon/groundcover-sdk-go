@@ -19,6 +19,9 @@ import (
 // swagger:model ClustersListResult
 type ClustersListResult struct {
 
+	// cloud provider
+	CloudProvider string `json:"cloudProvider,omitempty"`
+
 	// Cpu allocatable
 	CPUAllocatable float64 `json:"cpuAllocatable,omitempty"`
 
@@ -55,6 +58,9 @@ type ClustersListResult struct {
 
 	// issue count
 	IssueCount int64 `json:"issueCount,omitempty"`
+
+	// kubernetes version
+	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
 
 	// memory allocatable
 	MemoryAllocatable float64 `json:"memoryAllocatable,omitempty"`
