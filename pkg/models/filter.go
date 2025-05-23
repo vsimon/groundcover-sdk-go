@@ -19,10 +19,10 @@ import (
 type Filter struct {
 
 	// value
-	Value interface{} `json:"value,omitempty"`
+	Value interface{} `json:"value,omitempty" yaml:"value,omitempty"`
 
 	// op
-	Op Op `json:"op,omitempty"`
+	Op Op `json:"op,omitempty" yaml:"op,omitempty"`
 }
 
 // Validate validates this filter

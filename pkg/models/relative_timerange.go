@@ -21,11 +21,11 @@ type RelativeTimerange struct {
 
 	// Start of the range relative to now (e.g., "-5m", "-1h").
 	// Format: duration
-	From strfmt.Duration `json:"from,omitempty"`
+	From strfmt.Duration `json:"from,omitempty" yaml:"from,omitempty"`
 
 	// End of the range relative to now (e.g., "-1m", "now").
 	// Format: duration
-	To strfmt.Duration `json:"to,omitempty"`
+	To strfmt.Duration `json:"to,omitempty" yaml:"to,omitempty"`
 }
 
 // Validate validates this relative timerange

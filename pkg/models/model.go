@@ -22,13 +22,13 @@ type Model struct {
 
 	// List of queries defining the data sources for the monitor.
 	// Required: true
-	Queries []*BaseQuery `json:"queries"`
+	Queries []*BaseQuery `json:"queries" yaml:"queries"`
 
 	// List of reducers to aggregate or transform query results.
-	Reducers []*ReducerModel `json:"reducers"`
+	Reducers []*ReducerModel `json:"reducers" yaml:"reducers"`
 
 	// List of thresholds to evaluate against the final reduced value.
-	Thresholds []*Threshold `json:"thresholds"`
+	Thresholds []*Threshold `json:"thresholds" yaml:"thresholds"`
 }
 
 // Validate validates this model

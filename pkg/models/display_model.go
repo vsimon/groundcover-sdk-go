@@ -18,16 +18,16 @@ import (
 type DisplayModel struct {
 
 	// context header labels
-	ContextHeaderLabels []string `json:"contextHeaderLabels"`
+	ContextHeaderLabels []string `json:"contextHeaderLabels" yaml:"contextHeaderLabels"`
 
 	// description
-	Description string `json:"description,omitempty"`
+	Description string `json:"description,omitempty" yaml:"description,omitempty"`
 
 	// header
-	Header string `json:"header,omitempty"`
+	Header string `json:"header,omitempty" yaml:"header,omitempty"`
 
 	// resource header labels
-	ResourceHeaderLabels []string `json:"resourceHeaderLabels"`
+	ResourceHeaderLabels []string `json:"resourceHeaderLabels" yaml:"resourceHeaderLabels"`
 }
 
 // Validate validates this display model

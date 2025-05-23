@@ -18,16 +18,16 @@ import (
 type CatalogModel struct {
 
 	// catalog category
-	CatalogCategory string `json:"category,omitempty"`
+	CatalogCategory string `json:"category,omitempty" yaml:"category,omitempty"`
 
 	// catalog Id
-	CatalogID string `json:"id,omitempty"`
+	CatalogID string `json:"id,omitempty" yaml:"id,omitempty"`
 
 	// catalog tags
-	CatalogTags []string `json:"tags"`
+	CatalogTags []string `json:"tags" yaml:"tags"`
 
 	// catalog version
-	CatalogVersion int64 `json:"version,omitempty"`
+	CatalogVersion int64 `json:"version,omitempty" yaml:"version,omitempty"`
 }
 
 // Validate validates this catalog model

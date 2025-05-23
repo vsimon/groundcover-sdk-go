@@ -21,11 +21,11 @@ type EvaluationInterval struct {
 
 	// interval
 	// Format: duration
-	Interval strfmt.Duration `json:"interval,omitempty"`
+	Interval strfmt.Duration `json:"interval,omitempty" yaml:"interval,omitempty"`
 
 	// pending for
 	// Format: duration
-	PendingFor strfmt.Duration `json:"pendingFor,omitempty"`
+	PendingFor strfmt.Duration `json:"pendingFor,omitempty" yaml:"pendingFor,omitempty"`
 }
 
 // Validate validates this evaluation interval

@@ -18,10 +18,10 @@ import (
 type Processor struct {
 
 	// args
-	Args []string `json:"args"`
+	Args []string `json:"args" yaml:"args"`
 
 	// op
-	Op string `json:"op,omitempty"`
+	Op string `json:"op,omitempty" yaml:"op,omitempty"`
 }
 
 // Validate validates this processor
