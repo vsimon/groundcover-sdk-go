@@ -34,6 +34,12 @@ func (o *DeleteConfigReader) ReadResponse(response runtime.ClientResponse, consu
 			return nil, err
 		}
 		return nil, result
+	case 503:
+		result := NewDeleteConfigServiceUnavailable()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 	default:
 		return nil, runtime.NewAPIError("[DELETE /api/pipelines/logs/config] deleteConfig", response, response.Code())
 	}
@@ -166,6 +172,74 @@ func (o *DeleteConfigInternalServerError) GetPayload() interface{} {
 }
 
 func (o *DeleteConfigInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// response payload
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewDeleteConfigServiceUnavailable creates a DeleteConfigServiceUnavailable with default headers values
+func NewDeleteConfigServiceUnavailable() *DeleteConfigServiceUnavailable {
+	return &DeleteConfigServiceUnavailable{}
+}
+
+/*
+DeleteConfigServiceUnavailable describes a response with status code 503, with default header values.
+
+emptyLogsPipelineConfigResponse is used for empty responses
+*/
+type DeleteConfigServiceUnavailable struct {
+	Payload interface{}
+}
+
+// IsSuccess returns true when this delete config service unavailable response has a 2xx status code
+func (o *DeleteConfigServiceUnavailable) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this delete config service unavailable response has a 3xx status code
+func (o *DeleteConfigServiceUnavailable) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this delete config service unavailable response has a 4xx status code
+func (o *DeleteConfigServiceUnavailable) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this delete config service unavailable response has a 5xx status code
+func (o *DeleteConfigServiceUnavailable) IsServerError() bool {
+	return true
+}
+
+// IsCode returns true when this delete config service unavailable response a status code equal to that given
+func (o *DeleteConfigServiceUnavailable) IsCode(code int) bool {
+	return code == 503
+}
+
+// Code gets the status code for the delete config service unavailable response
+func (o *DeleteConfigServiceUnavailable) Code() int {
+	return 503
+}
+
+func (o *DeleteConfigServiceUnavailable) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /api/pipelines/logs/config][%d] deleteConfigServiceUnavailable %s", 503, payload)
+}
+
+func (o *DeleteConfigServiceUnavailable) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[DELETE /api/pipelines/logs/config][%d] deleteConfigServiceUnavailable %s", 503, payload)
+}
+
+func (o *DeleteConfigServiceUnavailable) GetPayload() interface{} {
+	return o.Payload
+}
+
+func (o *DeleteConfigServiceUnavailable) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {

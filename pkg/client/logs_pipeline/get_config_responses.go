@@ -42,6 +42,12 @@ func (o *GetConfigReader) ReadResponse(response runtime.ClientResponse, consumer
 			return nil, err
 		}
 		return nil, result
+	case 503:
+		result := NewGetConfigServiceUnavailable()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 	default:
 		return nil, runtime.NewAPIError("[GET /api/pipelines/logs/config] getConfig", response, response.Code())
 	}
@@ -244,6 +250,74 @@ func (o *GetConfigInternalServerError) GetPayload() interface{} {
 }
 
 func (o *GetConfigInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// response payload
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewGetConfigServiceUnavailable creates a GetConfigServiceUnavailable with default headers values
+func NewGetConfigServiceUnavailable() *GetConfigServiceUnavailable {
+	return &GetConfigServiceUnavailable{}
+}
+
+/*
+GetConfigServiceUnavailable describes a response with status code 503, with default header values.
+
+emptyLogsPipelineConfigResponse is used for empty responses
+*/
+type GetConfigServiceUnavailable struct {
+	Payload interface{}
+}
+
+// IsSuccess returns true when this get config service unavailable response has a 2xx status code
+func (o *GetConfigServiceUnavailable) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this get config service unavailable response has a 3xx status code
+func (o *GetConfigServiceUnavailable) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this get config service unavailable response has a 4xx status code
+func (o *GetConfigServiceUnavailable) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this get config service unavailable response has a 5xx status code
+func (o *GetConfigServiceUnavailable) IsServerError() bool {
+	return true
+}
+
+// IsCode returns true when this get config service unavailable response a status code equal to that given
+func (o *GetConfigServiceUnavailable) IsCode(code int) bool {
+	return code == 503
+}
+
+// Code gets the status code for the get config service unavailable response
+func (o *GetConfigServiceUnavailable) Code() int {
+	return 503
+}
+
+func (o *GetConfigServiceUnavailable) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /api/pipelines/logs/config][%d] getConfigServiceUnavailable %s", 503, payload)
+}
+
+func (o *GetConfigServiceUnavailable) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[GET /api/pipelines/logs/config][%d] getConfigServiceUnavailable %s", 503, payload)
+}
+
+func (o *GetConfigServiceUnavailable) GetPayload() interface{} {
+	return o.Payload
+}
+
+func (o *GetConfigServiceUnavailable) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {

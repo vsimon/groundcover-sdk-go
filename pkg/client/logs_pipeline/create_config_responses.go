@@ -42,6 +42,12 @@ func (o *CreateConfigReader) ReadResponse(response runtime.ClientResponse, consu
 			return nil, err
 		}
 		return nil, result
+	case 503:
+		result := NewCreateConfigServiceUnavailable()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 	default:
 		return nil, runtime.NewAPIError("[POST /api/pipelines/logs/config] createConfig", response, response.Code())
 	}
@@ -244,6 +250,74 @@ func (o *CreateConfigInternalServerError) GetPayload() interface{} {
 }
 
 func (o *CreateConfigInternalServerError) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	// response payload
+	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
+// NewCreateConfigServiceUnavailable creates a CreateConfigServiceUnavailable with default headers values
+func NewCreateConfigServiceUnavailable() *CreateConfigServiceUnavailable {
+	return &CreateConfigServiceUnavailable{}
+}
+
+/*
+CreateConfigServiceUnavailable describes a response with status code 503, with default header values.
+
+emptyLogsPipelineConfigResponse is used for empty responses
+*/
+type CreateConfigServiceUnavailable struct {
+	Payload interface{}
+}
+
+// IsSuccess returns true when this create config service unavailable response has a 2xx status code
+func (o *CreateConfigServiceUnavailable) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this create config service unavailable response has a 3xx status code
+func (o *CreateConfigServiceUnavailable) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this create config service unavailable response has a 4xx status code
+func (o *CreateConfigServiceUnavailable) IsClientError() bool {
+	return false
+}
+
+// IsServerError returns true when this create config service unavailable response has a 5xx status code
+func (o *CreateConfigServiceUnavailable) IsServerError() bool {
+	return true
+}
+
+// IsCode returns true when this create config service unavailable response a status code equal to that given
+func (o *CreateConfigServiceUnavailable) IsCode(code int) bool {
+	return code == 503
+}
+
+// Code gets the status code for the create config service unavailable response
+func (o *CreateConfigServiceUnavailable) Code() int {
+	return 503
+}
+
+func (o *CreateConfigServiceUnavailable) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /api/pipelines/logs/config][%d] createConfigServiceUnavailable %s", 503, payload)
+}
+
+func (o *CreateConfigServiceUnavailable) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /api/pipelines/logs/config][%d] createConfigServiceUnavailable %s", 503, payload)
+}
+
+func (o *CreateConfigServiceUnavailable) GetPayload() interface{} {
+	return o.Payload
+}
+
+func (o *CreateConfigServiceUnavailable) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	// response payload
 	if err := consumer.Consume(response.Body(), &o.Payload); err != nil && err != io.EOF {
