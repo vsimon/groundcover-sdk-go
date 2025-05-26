@@ -21,93 +21,93 @@ import (
 type CreateMonitorRequest struct {
 
 	// Annotations to attach to the alert.
-	Annotations map[string]string `json:"annotations,omitempty"`
+	Annotations map[string]string `json:"annotations,omitempty" yaml:"annotations,omitempty"`
 
 	// Whether the alert should auto-resolve.
-	AutoResolve bool `json:"autoResolve,omitempty"`
+	AutoResolve bool `json:"autoResolve,omitempty" yaml:"autoResolve,omitempty"`
 
 	// Category of the monitor.
-	Category string `json:"category,omitempty"`
+	Category string `json:"category,omitempty" yaml:"category,omitempty"`
 
 	// State to enter if execution fails.
 	// Enum: ["OK"," Error"," Alerting"]
-	ExecutionErrorState string `json:"executionErrorState,omitempty"`
+	ExecutionErrorState string `json:"executionErrorState,omitempty" yaml:"executionErrorState,omitempty"`
 
 	// Whether the monitor is paused.
-	IsPaused bool `json:"isPaused,omitempty"`
+	IsPaused bool `json:"isPaused,omitempty" yaml:"isPaused,omitempty"`
 
 	// Labels to attach to the monitor/alert.
-	Labels map[string]string `json:"labels,omitempty"`
+	Labels map[string]string `json:"labels,omitempty" yaml:"labels,omitempty"`
 
 	// Type of measurement (state or event).
 	// Enum: ["state"," event"]
-	MeasurementType string `json:"measurementType,omitempty"`
+	MeasurementType string `json:"measurementType,omitempty" yaml:"measurementType,omitempty"`
 
 	// State to enter if no data is returned.
 	// Enum: ["OK"," NoData"," Alerting"]
-	NoDataState string `json:"noDataState,omitempty"`
+	NoDataState string `json:"noDataState,omitempty" yaml:"noDataState,omitempty"`
 
 	// Routing information.
-	Routing []string `json:"routing"`
+	Routing []string `json:"routing" yaml:"routing"`
 
 	// Severity level (e.g., critical, warning, info).
-	Severity string `json:"severity,omitempty"`
+	Severity string `json:"severity,omitempty" yaml:"severity,omitempty"`
 
 	// Team associated with the monitor.
-	Team string `json:"team,omitempty"`
+	Team string `json:"team,omitempty" yaml:"team,omitempty"`
 
 	// Title of the monitor.
 	// Required: true
-	Title *string `json:"title"`
+	Title *string `json:"title" yaml:"title"`
 
 	// catalog
-	Catalog *CatalogModel `json:"catalog,omitempty"`
+	Catalog *CatalogModel `json:"catalog,omitempty" yaml:"catalog,omitempty"`
 
 	// display
-	Display *DisplayModel `json:"display,omitempty"`
+	Display *DisplayModel `json:"display,omitempty" yaml:"display,omitempty"`
 
 	// evaluation interval
-	EvaluationInterval *EvaluationInterval `json:"evaluationInterval,omitempty"`
+	EvaluationInterval *EvaluationInterval `json:"evaluationInterval,omitempty" yaml:"evaluationInterval,omitempty"`
 
 	// model
-	Model *Model `json:"model,omitempty"`
+	Model *Model `json:"model,omitempty" yaml:"model,omitempty"`
 }
 
 // UnmarshalJSON unmarshals this object from a JSON structure
 func (m *CreateMonitorRequest) UnmarshalJSON(raw []byte) error {
 	// AO0
 	var dataAO0 struct {
-		Annotations map[string]string `json:"annotations,omitempty"`
+		Annotations map[string]string `json:"annotations,omitempty" yaml:"annotations,omitempty"`
 
-		AutoResolve bool `json:"autoResolve,omitempty"`
+		AutoResolve bool `json:"autoResolve,omitempty" yaml:"autoResolve,omitempty"`
 
-		Category string `json:"category,omitempty"`
+		Category string `json:"category,omitempty" yaml:"category,omitempty"`
 
-		ExecutionErrorState string `json:"executionErrorState,omitempty"`
+		ExecutionErrorState string `json:"executionErrorState,omitempty" yaml:"executionErrorState,omitempty"`
 
-		IsPaused bool `json:"isPaused,omitempty"`
+		IsPaused bool `json:"isPaused,omitempty" yaml:"isPaused,omitempty"`
 
-		Labels map[string]string `json:"labels,omitempty"`
+		Labels map[string]string `json:"labels,omitempty" yaml:"labels,omitempty"`
 
-		MeasurementType string `json:"measurementType,omitempty"`
+		MeasurementType string `json:"measurementType,omitempty" yaml:"measurementType,omitempty"`
 
-		NoDataState string `json:"noDataState,omitempty"`
+		NoDataState string `json:"noDataState,omitempty" yaml:"noDataState,omitempty"`
 
-		Routing []string `json:"routing"`
+		Routing []string `json:"routing" yaml:"routing"`
 
-		Severity string `json:"severity,omitempty"`
+		Severity string `json:"severity,omitempty" yaml:"severity,omitempty"`
 
-		Team string `json:"team,omitempty"`
+		Team string `json:"team,omitempty" yaml:"team,omitempty"`
 
-		Title *string `json:"title"`
+		Title *string `json:"title" yaml:"title"`
 
-		Catalog *CatalogModel `json:"catalog,omitempty"`
+		Catalog *CatalogModel `json:"catalog,omitempty" yaml:"catalog,omitempty"`
 
-		Display *DisplayModel `json:"display,omitempty"`
+		Display *DisplayModel `json:"display,omitempty" yaml:"display,omitempty"`
 
-		EvaluationInterval *EvaluationInterval `json:"evaluationInterval,omitempty"`
+		EvaluationInterval *EvaluationInterval `json:"evaluationInterval,omitempty" yaml:"evaluationInterval,omitempty"`
 
-		Model *Model `json:"model,omitempty"`
+		Model *Model `json:"model,omitempty" yaml:"model,omitempty"`
 	}
 	if err := swag.ReadJSON(raw, &dataAO0); err != nil {
 		return err
@@ -153,37 +153,37 @@ func (m CreateMonitorRequest) MarshalJSON() ([]byte, error) {
 	_parts := make([][]byte, 0, 1)
 
 	var dataAO0 struct {
-		Annotations map[string]string `json:"annotations,omitempty"`
+		Annotations map[string]string `json:"annotations,omitempty" yaml:"annotations,omitempty"`
 
-		AutoResolve bool `json:"autoResolve,omitempty"`
+		AutoResolve bool `json:"autoResolve,omitempty" yaml:"autoResolve,omitempty"`
 
-		Category string `json:"category,omitempty"`
+		Category string `json:"category,omitempty" yaml:"category,omitempty"`
 
-		ExecutionErrorState string `json:"executionErrorState,omitempty"`
+		ExecutionErrorState string `json:"executionErrorState,omitempty" yaml:"executionErrorState,omitempty"`
 
-		IsPaused bool `json:"isPaused,omitempty"`
+		IsPaused bool `json:"isPaused,omitempty" yaml:"isPaused,omitempty"`
 
-		Labels map[string]string `json:"labels,omitempty"`
+		Labels map[string]string `json:"labels,omitempty" yaml:"labels,omitempty"`
 
-		MeasurementType string `json:"measurementType,omitempty"`
+		MeasurementType string `json:"measurementType,omitempty" yaml:"measurementType,omitempty"`
 
-		NoDataState string `json:"noDataState,omitempty"`
+		NoDataState string `json:"noDataState,omitempty" yaml:"noDataState,omitempty"`
 
-		Routing []string `json:"routing"`
+		Routing []string `json:"routing" yaml:"routing"`
 
-		Severity string `json:"severity,omitempty"`
+		Severity string `json:"severity,omitempty" yaml:"severity,omitempty"`
 
-		Team string `json:"team,omitempty"`
+		Team string `json:"team,omitempty" yaml:"team,omitempty"`
 
-		Title *string `json:"title"`
+		Title *string `json:"title" yaml:"title"`
 
-		Catalog *CatalogModel `json:"catalog,omitempty"`
+		Catalog *CatalogModel `json:"catalog,omitempty" yaml:"catalog,omitempty"`
 
-		Display *DisplayModel `json:"display,omitempty"`
+		Display *DisplayModel `json:"display,omitempty" yaml:"display,omitempty"`
 
-		EvaluationInterval *EvaluationInterval `json:"evaluationInterval,omitempty"`
+		EvaluationInterval *EvaluationInterval `json:"evaluationInterval,omitempty" yaml:"evaluationInterval,omitempty"`
 
-		Model *Model `json:"model,omitempty"`
+		Model *Model `json:"model,omitempty" yaml:"model,omitempty"`
 	}
 
 	dataAO0.Annotations = m.Annotations
