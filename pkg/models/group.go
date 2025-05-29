@@ -22,6 +22,9 @@ type Group struct {
 	// conditions
 	Conditions []*Condition `json:"conditions" yaml:"conditions"`
 
+	// disabled
+	Disabled bool `json:"disabled,omitempty" yaml:"disabled,omitempty"`
+
 	// groups
 	Groups []*Group `json:"groups" yaml:"groups"`
 
