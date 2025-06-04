@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 	"strconv"
 
 	"github.com/go-openapi/errors"
@@ -37,6 +38,7 @@ type QueryRequest struct {
 	Promql string `json:"Promql,omitempty"`
 
 	// query type
+	// Enum: ["range","instant"]
 	QueryType string `json:"QueryType,omitempty"`
 
 	// start
@@ -63,6 +65,10 @@ func (m *QueryRequest) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validatePipeline(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateQueryType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -132,6 +138,48 @@ func (m *QueryRequest) validatePipeline(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+var queryRequestTypeQueryTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["range","instant"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		queryRequestTypeQueryTypePropEnum = append(queryRequestTypeQueryTypePropEnum, v)
+	}
+}
+
+const (
+
+	// QueryRequestQueryTypeRange captures enum value "range"
+	QueryRequestQueryTypeRange string = "range"
+
+	// QueryRequestQueryTypeInstant captures enum value "instant"
+	QueryRequestQueryTypeInstant string = "instant"
+)
+
+// prop value enum
+func (m *QueryRequest) validateQueryTypeEnum(path, location string, value string) error {
+	if err := validate.EnumCase(path, location, value, queryRequestTypeQueryTypePropEnum, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *QueryRequest) validateQueryType(formats strfmt.Registry) error {
+	if swag.IsZero(m.QueryType) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateQueryTypeEnum("QueryType", "body", m.QueryType); err != nil {
+		return err
 	}
 
 	return nil
