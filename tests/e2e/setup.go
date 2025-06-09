@@ -3,6 +3,7 @@ package e2e
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
 	"io"
 	"net/http"
@@ -164,8 +165,20 @@ type TestClient struct {
 	T       *testing.T
 }
 
+type testClientOptions struct {
+	backendID string
+}
+
+type TestClientOption func(*testClientOptions)
+
+func TestClientWithBackendID(backendID string) TestClientOption {
+	return func(opts *testClientOptions) {
+		opts.backendID = backendID
+	}
+}
+
 // NewTestClient creates a new client for testing
-func NewTestClient(t *testing.T) *TestClient {
+func NewTestClient(t *testing.T, options ...TestClientOption) *TestClient {
 	t.Helper()
 	debug := isDebugEnabled()
 
@@ -180,12 +193,23 @@ func NewTestClient(t *testing.T) *TestClient {
 		t.Fatal("GC_API_KEY environment variable is required")
 	}
 
-	backendID := os.Getenv("GC_BACKEND_ID")
-	if backendID == "" {
+	opts := &testClientOptions{
+		backendID: os.Getenv("GC_BACKEND_ID"),
+	}
+
+	for _, option := range options {
+		option(opts)
+	}
+
+	if opts.backendID == "" {
 		t.Fatal("GC_BACKEND_ID environment variable is required")
 	}
 
 	traceparent := os.Getenv("GC_TRACEPARENT")
+	if traceparent == "" {
+		traceparent = generateTraceParent()
+	}
+	t.Logf("TraceID: %s", extractTraceID(traceparent))
 
 	// Parse baseURL for go-openapi transport config
 	parsedURL, err := url.Parse(baseURLStr)
@@ -224,7 +248,7 @@ func NewTestClient(t *testing.T) *TestClient {
 
 	transportWrapper := transport.NewTransport(
 		apiKey,
-		backendID,
+		opts.backendID,
 		baseHttpTransport,
 		defaultRetryCount,
 		minRetryWait,
@@ -285,8 +309,8 @@ func NewTestClient(t *testing.T) *TestClient {
 
 // setupTestClient is a convenience wrapper around NewTestClient
 // that returns the context and client directly for use in tests
-func setupTestClient(t *testing.T) (context.Context, *client.GroundcoverAPI) {
-	tc := NewTestClient(t)
+func setupTestClient(t *testing.T, options ...TestClientOption) (context.Context, *client.GroundcoverAPI) {
+	tc := NewTestClient(t, options...)
 	return tc.BaseCtx, tc.Client
 }
 
@@ -296,4 +320,26 @@ func createEnvVariablesForTest(apiUrl, apiKey, backendId, traceparent string) {
 	os.Setenv("GC_API_KEY", apiKey)
 	os.Setenv("GC_BACKEND_ID", backendId)
 	os.Setenv("GC_TRACEPARENT", traceparent)
+}
+
+func generateTraceParent() string {
+	// Generate 16 random bytes for the first hex section (32 hex chars)
+	part1 := make([]byte, 16)
+	rand.Read(part1)
+
+	// Generate 8 random bytes for the second hex section (16 hex chars)
+	part2 := make([]byte, 8)
+	rand.Read(part2)
+
+	// Format: 00-{32 hex chars}-{16 hex chars}-01
+	return fmt.Sprintf("00-%x-%x-01", part1, part2)
+}
+
+func extractTraceID(traceParent string) string {
+	// Split by hyphens and return the second part (index 1) - the 32-char trace ID
+	parts := strings.Split(traceParent, "-")
+	if len(parts) >= 2 {
+		return parts[1]
+	}
+	return ""
 }

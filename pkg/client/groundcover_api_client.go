@@ -11,6 +11,7 @@ import (
 	"github.com/go-openapi/strfmt"
 
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/apikeys"
+	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/ingestionkeys"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/k8s"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/logs_pipeline"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/metrics"
@@ -62,6 +63,7 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *Groundcove
 	cli := new(GroundcoverAPI)
 	cli.Transport = transport
 	cli.Apikeys = apikeys.New(transport, formats)
+	cli.Ingestionkeys = ingestionkeys.New(transport, formats)
 	cli.K8s = k8s.New(transport, formats)
 	cli.LogsPipeline = logs_pipeline.New(transport, formats)
 	cli.Metrics = metrics.New(transport, formats)
@@ -114,6 +116,8 @@ func (cfg *TransportConfig) WithSchemes(schemes []string) *TransportConfig {
 type GroundcoverAPI struct {
 	Apikeys apikeys.ClientService
 
+	Ingestionkeys ingestionkeys.ClientService
+
 	K8s k8s.ClientService
 
 	LogsPipeline logs_pipeline.ClientService
@@ -133,6 +137,7 @@ type GroundcoverAPI struct {
 func (c *GroundcoverAPI) SetTransport(transport runtime.ClientTransport) {
 	c.Transport = transport
 	c.Apikeys.SetTransport(transport)
+	c.Ingestionkeys.SetTransport(transport)
 	c.K8s.SetTransport(transport)
 	c.LogsPipeline.SetTransport(transport)
 	c.Metrics.SetTransport(transport)
