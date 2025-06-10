@@ -60,7 +60,7 @@ type ClientService interface {
 
 	DeleteIngestionKey(params *DeleteIngestionKeyParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteIngestionKeyAccepted, error)
 
-	ListKeys(params *ListKeysParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ListKeysOK, error)
+	ListIngestionKeys(params *ListIngestionKeysParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ListIngestionKeysOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -144,22 +144,22 @@ func (a *Client) DeleteIngestionKey(params *DeleteIngestionKeyParams, authInfo r
 }
 
 /*
-ListKeys List Ingestion Keys
+ListIngestionKeys List Ingestion Keys
 */
-func (a *Client) ListKeys(params *ListKeysParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ListKeysOK, error) {
+func (a *Client) ListIngestionKeys(params *ListIngestionKeysParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ListIngestionKeysOK, error) {
 	// TODO: Validate the params before sending
 	if params == nil {
-		params = NewListKeysParams()
+		params = NewListIngestionKeysParams()
 	}
 	op := &runtime.ClientOperation{
-		ID:                 "listKeys",
+		ID:                 "listIngestionKeys",
 		Method:             "POST",
 		PathPattern:        "/api/rbac/ingestion-keys/list",
 		ProducesMediaTypes: []string{"application/json"},
 		ConsumesMediaTypes: []string{"application/json"},
 		Schemes:            []string{"http", "https"},
 		Params:             params,
-		Reader:             &ListKeysReader{formats: a.formats},
+		Reader:             &ListIngestionKeysReader{formats: a.formats},
 		AuthInfo:           authInfo,
 		Context:            params.Context,
 		Client:             params.HTTPClient,
@@ -172,13 +172,13 @@ func (a *Client) ListKeys(params *ListKeysParams, authInfo runtime.ClientAuthInf
 	if err != nil {
 		return nil, err
 	}
-	success, ok := result.(*ListKeysOK)
+	success, ok := result.(*ListIngestionKeysOK)
 	if ok {
 		return success, nil
 	}
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
-	msg := fmt.Sprintf("unexpected success response for listKeys: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	msg := fmt.Sprintf("unexpected success response for listIngestionKeys: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

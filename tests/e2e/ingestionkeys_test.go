@@ -44,15 +44,15 @@ func TestIngestionKeysE2E(t *testing.T) {
 	createdKey = *ingestionCreateResp.Payload.Key
 	t.Logf("Successfully created Ingestion Key: %s", createdKey)
 
-	ingestionListParams := ingestionKeysClient.NewListKeysParamsWithContext(ctx).WithBody(&models.ListIngestionKeysRequest{
+	ingestionListParams := ingestionKeysClient.NewListIngestionKeysParamsWithContext(ctx).WithBody(&models.ListIngestionKeysRequest{
 		Name: ingestionKeyName,
 	})
 
-	var ingestionListResp *ingestionKeysClient.ListKeysOK
+	var ingestionListResp *ingestionKeysClient.ListIngestionKeysOK
 	timeout := time.Now().Add(10 * time.Second)
 	for {
 		var err error
-		ingestionListResp, err = apiClient.Ingestionkeys.ListKeys(ingestionListParams, nil)
+		ingestionListResp, err = apiClient.Ingestionkeys.ListIngestionKeys(ingestionListParams, nil)
 		require.NoError(t, err, "Failed to list Ingestion Keys: %v", err)
 		require.NotNil(t, ingestionListResp.Payload, "Ingestion Key list response payload is nil")
 
