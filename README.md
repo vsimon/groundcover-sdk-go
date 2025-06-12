@@ -36,7 +36,6 @@ The SDK client requires a configured transport stack that handles authentication
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"net/url"
@@ -44,10 +43,10 @@ import (
 	"strings"
 	"time"
 
-	client "github.com/groundcover-com/groundcover-sdk-go/pkg/client"
-	"github.com/groundcover-com/groundcover-sdk-go/pkg/transport"
 	"github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
+	oapiClient "github.com/groundcover-com/groundcover-sdk-go/pkg/client"
+	"github.com/groundcover-com/groundcover-sdk-go/pkg/transport"
 )
 
 const (
@@ -84,7 +83,7 @@ func main() {
 	host := parsedURL.Host
 	basePath := parsedURL.Path
 	if basePath == "" {
-		basePath = client.DefaultBasePath // Use default if path is empty
+		basePath = oapiClient.DefaultBasePath // Use default if path is empty
 	}
 	if !strings.HasPrefix(basePath, "/") && basePath != "" {
 		basePath = "/" + basePath
@@ -92,7 +91,7 @@ func main() {
 
 	schemes := []string{parsedURL.Scheme}
 	if len(schemes) == 0 || schemes[0] == "" {
-		schemes = client.DefaultSchemes // Use default if scheme is missing
+		schemes = oapiClient.DefaultSchemes // Use default if scheme is missing
 	}
 
 	// --- Transport Stack Construction ---
@@ -121,7 +120,7 @@ func main() {
 	finalRuntimeTransport.Transport = transportWrapper // Set our custom transport
 
 	// --- Client Initialization ---
-	sdkClient := client.New(finalRuntimeTransport, strfmt.Default)
+	sdkClient := oapiClient.New(finalRuntimeTransport, strfmt.Default)
 
 	// Now you can use sdkClient to make API calls
 	// Example: sdkClient.Metrics.MetricsQuery(...)

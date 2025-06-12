@@ -17,6 +17,7 @@ import (
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/metrics"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/monitors"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/policies"
+	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/search"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/serviceaccounts"
 )
 
@@ -69,6 +70,7 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *Groundcove
 	cli.Metrics = metrics.New(transport, formats)
 	cli.Monitors = monitors.New(transport, formats)
 	cli.Policies = policies.New(transport, formats)
+	cli.Search = search.New(transport, formats)
 	cli.Serviceaccounts = serviceaccounts.New(transport, formats)
 	return cli
 }
@@ -128,6 +130,8 @@ type GroundcoverAPI struct {
 
 	Policies policies.ClientService
 
+	Search search.ClientService
+
 	Serviceaccounts serviceaccounts.ClientService
 
 	Transport runtime.ClientTransport
@@ -143,5 +147,6 @@ func (c *GroundcoverAPI) SetTransport(transport runtime.ClientTransport) {
 	c.Metrics.SetTransport(transport)
 	c.Monitors.SetTransport(transport)
 	c.Policies.SetTransport(transport)
+	c.Search.SetTransport(transport)
 	c.Serviceaccounts.SetTransport(transport)
 }
