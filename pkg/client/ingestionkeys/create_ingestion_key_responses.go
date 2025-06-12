@@ -66,7 +66,7 @@ CreateIngestionKeyCreated describes a response with status code 201, with defaul
 CreateIngestionKeyCreated create ingestion key created
 */
 type CreateIngestionKeyCreated struct {
-	Payload *models.CreateIngestionKeyResponse
+	Payload *models.IngestionKeyResult
 }
 
 // IsSuccess returns true when this create ingestion key created response has a 2xx status code
@@ -109,13 +109,13 @@ func (o *CreateIngestionKeyCreated) String() string {
 	return fmt.Sprintf("[POST /api/rbac/ingestion-keys/create][%d] createIngestionKeyCreated %s", 201, payload)
 }
 
-func (o *CreateIngestionKeyCreated) GetPayload() *models.CreateIngestionKeyResponse {
+func (o *CreateIngestionKeyCreated) GetPayload() *models.IngestionKeyResult {
 	return o.Payload
 }
 
 func (o *CreateIngestionKeyCreated) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
-	o.Payload = new(models.CreateIngestionKeyResponse)
+	o.Payload = new(models.IngestionKeyResult)
 
 	// response payload
 	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {

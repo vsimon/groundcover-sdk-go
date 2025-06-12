@@ -35,13 +35,12 @@ func TestIngestionKeysE2E(t *testing.T) {
 	ingestionCreateParams := ingestionKeysClient.NewCreateIngestionKeyParamsWithContext(ctx).WithBody(&ingestionKeyReq)
 	ingestionCreateResp, err := apiClient.Ingestionkeys.CreateIngestionKey(ingestionCreateParams, nil)
 	require.NoError(t, err, "Failed to create Ingestion Key: %v", err)
+	require.NotNil(t, ingestionCreateResp, "Ingestion Key creation response is nil")
 	require.NotNil(t, ingestionCreateResp.Payload, "Ingestion Key response payload is nil")
 	require.NotEmpty(t, ingestionCreateResp.Payload.Key, "Created Ingestion Key is empty")
-	if ingestionCreateResp.Payload.Key == nil {
-		t.Fatal("Created Ingestion Key is nil")
-	}
+	require.Equal(t, ingestionKeyName, ingestionCreateResp.Payload.Name, "Ingestion Key name does not match expected value")
 
-	createdKey = *ingestionCreateResp.Payload.Key
+	createdKey = ingestionCreateResp.Payload.Key
 	t.Logf("Successfully created Ingestion Key: %s", createdKey)
 
 	ingestionListParams := ingestionKeysClient.NewListIngestionKeysParamsWithContext(ctx).WithBody(&models.ListIngestionKeysRequest{
