@@ -97,17 +97,29 @@ type FixContentTypeTransport struct {
 	testing   *testing.T
 }
 
-var getMonitorPathRegex = regexp.MustCompile(`^/api/monitors/[^/]+/?$`) // Matches /api/monitors/{id}
+var getMonitorPathRegex = regexp.MustCompile(`^/api/monitors/[^/]+/?$`) // Matches /api/monitors/{id} but not /api/monitors/silences
 
 func (f *FixContentTypeTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	// Fix request Content-Type for workflow create endpoint
+	if req.Method == http.MethodPost && req.URL.Path == "/api/workflows/create" {
+		originalContentType := req.Header.Get("Content-Type")
+		req.Header.Set("Content-Type", "text/plain")
+		if isDebugEnabled() {
+			f.testing.Logf("Fixed request Content-Type for POST %s. Original: '%s', Set to: 'text/plain'",
+				req.URL.Path, originalContentType)
+		}
+	}
+
 	// Execute the request using the underlying transport
 	resp, err := f.transport.RoundTrip(req)
 	if err != nil {
 		return nil, err
 	}
 
-	// Check if this is the response we need to fix
-	if req.Method == http.MethodGet && resp.StatusCode == http.StatusOK && getMonitorPathRegex.MatchString(req.URL.Path) {
+	// Check if this is the response we need to fix (only for monitor GET endpoints, not silences)
+	if req.Method == http.MethodGet && resp.StatusCode == http.StatusOK &&
+		getMonitorPathRegex.MatchString(req.URL.Path) &&
+		!strings.Contains(req.URL.Path, "silences") {
 		contentType := resp.Header.Get("Content-Type")
 		if contentType == "" || !strings.HasPrefix(contentType, "application/x-yaml") {
 			if isDebugEnabled() {

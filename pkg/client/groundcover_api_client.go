@@ -19,6 +19,7 @@ import (
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/policies"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/search"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/serviceaccounts"
+	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/workflows"
 )
 
 // Default groundcover API HTTP client.
@@ -72,6 +73,7 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *Groundcove
 	cli.Policies = policies.New(transport, formats)
 	cli.Search = search.New(transport, formats)
 	cli.Serviceaccounts = serviceaccounts.New(transport, formats)
+	cli.Workflows = workflows.New(transport, formats)
 	return cli
 }
 
@@ -134,6 +136,8 @@ type GroundcoverAPI struct {
 
 	Serviceaccounts serviceaccounts.ClientService
 
+	Workflows workflows.ClientService
+
 	Transport runtime.ClientTransport
 }
 
@@ -149,4 +153,5 @@ func (c *GroundcoverAPI) SetTransport(transport runtime.ClientTransport) {
 	c.Policies.SetTransport(transport)
 	c.Search.SetTransport(transport)
 	c.Serviceaccounts.SetTransport(transport)
+	c.Workflows.SetTransport(transport)
 }

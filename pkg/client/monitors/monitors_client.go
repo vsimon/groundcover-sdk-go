@@ -102,13 +102,23 @@ func WithAcceptApplicationxYaml(r *runtime.ClientOperation) {
 type ClientService interface {
 	CreateMonitor(params *CreateMonitorParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateMonitorOK, error)
 
+	CreateSilence(params *CreateSilenceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateSilenceOK, error)
+
 	DeleteMonitor(params *DeleteMonitorParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteMonitorOK, error)
 
+	DeleteSilence(params *DeleteSilenceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteSilenceOK, error)
+
+	GetAllSilences(params *GetAllSilencesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetAllSilencesOK, error)
+
 	GetMonitor(params *GetMonitorParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetMonitorOK, error)
+
+	GetSilence(params *GetSilenceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetSilenceOK, error)
 
 	ListMonitors(params *ListMonitorsParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*ListMonitorsOK, error)
 
 	UpdateMonitor(params *UpdateMonitorParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UpdateMonitorAccepted, error)
+
+	UpdateSilence(params *UpdateSilenceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UpdateSilenceOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
 }
@@ -153,6 +163,47 @@ func (a *Client) CreateMonitor(params *CreateMonitorParams, authInfo runtime.Cli
 }
 
 /*
+CreateSilence creates silence
+
+Creates a new silence for monitoring alerts.
+*/
+func (a *Client) CreateSilence(params *CreateSilenceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*CreateSilenceOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewCreateSilenceParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "createSilence",
+		Method:             "POST",
+		PathPattern:        "/api/monitors/silences",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &CreateSilenceReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*CreateSilenceOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for createSilence: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
 DeleteMonitor Delete Monitor
 */
 func (a *Client) DeleteMonitor(params *DeleteMonitorParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteMonitorOK, error) {
@@ -192,6 +243,88 @@ func (a *Client) DeleteMonitor(params *DeleteMonitorParams, authInfo runtime.Cli
 }
 
 /*
+DeleteSilence deletes silence
+
+Deletes a silence by its UUID.
+*/
+func (a *Client) DeleteSilence(params *DeleteSilenceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*DeleteSilenceOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDeleteSilenceParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "deleteSilence",
+		Method:             "DELETE",
+		PathPattern:        "/api/monitors/silences/{id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &DeleteSilenceReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*DeleteSilenceOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for deleteSilence: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+GetAllSilences gets all silences
+
+Retrieves all silences with optional filtering.
+*/
+func (a *Client) GetAllSilences(params *GetAllSilencesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetAllSilencesOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetAllSilencesParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "getAllSilences",
+		Method:             "GET",
+		PathPattern:        "/api/monitors/silences",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &GetAllSilencesReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetAllSilencesOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for getAllSilences: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
 GetMonitor Get Monitor Definition (YAML)
 */
 func (a *Client) GetMonitor(params *GetMonitorParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetMonitorOK, error) {
@@ -227,6 +360,47 @@ func (a *Client) GetMonitor(params *GetMonitorParams, authInfo runtime.ClientAut
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for getMonitor: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+GetSilence gets silence by ID
+
+Retrieves a specific silence by its UUID.
+*/
+func (a *Client) GetSilence(params *GetSilenceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetSilenceOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetSilenceParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "getSilence",
+		Method:             "GET",
+		PathPattern:        "/api/monitors/silences/{id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &GetSilenceReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetSilenceOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for getSilence: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
@@ -305,6 +479,47 @@ func (a *Client) UpdateMonitor(params *UpdateMonitorParams, authInfo runtime.Cli
 	// unexpected success response
 	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for updateMonitor: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+UpdateSilence updates silence
+
+Updates an existing silence by its UUID.
+*/
+func (a *Client) UpdateSilence(params *UpdateSilenceParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*UpdateSilenceOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUpdateSilenceParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "updateSilence",
+		Method:             "PUT",
+		PathPattern:        "/api/monitors/silences/{id}",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &UpdateSilenceReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*UpdateSilenceOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for updateSilence: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 
