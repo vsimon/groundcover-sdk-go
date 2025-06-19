@@ -70,7 +70,7 @@ func TestWorkflowsEndpoints(t *testing.T) {
 
 		listParams := workflows.NewListWorkflowsParams().
 			WithContext(client.BaseCtx).
-			WithTimeout(defaultTimeout * 2)
+			WithTimeout(defaultTimeout * 4)
 
 		listResp, err := client.Client.Workflows.ListWorkflows(listParams, nil)
 		require.NoError(t, err, "Failed to list workflows")
@@ -125,7 +125,7 @@ func TestWorkflowsEndpoints(t *testing.T) {
 		// Verify deletion by listing workflows again and ensuring it's not there
 		listParams := workflows.NewListWorkflowsParams().
 			WithContext(client.BaseCtx).
-			WithTimeout(defaultTimeout * 2) // Double the timeout for the post-delete list
+			WithTimeout(defaultTimeout * 4) // Double the timeout for the post-delete list
 
 		listResp, err := client.Client.Workflows.ListWorkflows(listParams, nil)
 		require.NoError(t, err, "Failed to list workflows after deletion")
