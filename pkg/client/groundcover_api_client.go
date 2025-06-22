@@ -13,12 +13,14 @@ import (
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/apikeys"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/ingestionkeys"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/k8s"
+	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/logs"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/logs_pipeline"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/metrics"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/monitors"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/policies"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/search"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/serviceaccounts"
+	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/traces"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/client/workflows"
 )
 
@@ -67,12 +69,14 @@ func New(transport runtime.ClientTransport, formats strfmt.Registry) *Groundcove
 	cli.Apikeys = apikeys.New(transport, formats)
 	cli.Ingestionkeys = ingestionkeys.New(transport, formats)
 	cli.K8s = k8s.New(transport, formats)
+	cli.Logs = logs.New(transport, formats)
 	cli.LogsPipeline = logs_pipeline.New(transport, formats)
 	cli.Metrics = metrics.New(transport, formats)
 	cli.Monitors = monitors.New(transport, formats)
 	cli.Policies = policies.New(transport, formats)
 	cli.Search = search.New(transport, formats)
 	cli.Serviceaccounts = serviceaccounts.New(transport, formats)
+	cli.Traces = traces.New(transport, formats)
 	cli.Workflows = workflows.New(transport, formats)
 	return cli
 }
@@ -124,6 +128,8 @@ type GroundcoverAPI struct {
 
 	K8s k8s.ClientService
 
+	Logs logs.ClientService
+
 	LogsPipeline logs_pipeline.ClientService
 
 	Metrics metrics.ClientService
@@ -136,6 +142,8 @@ type GroundcoverAPI struct {
 
 	Serviceaccounts serviceaccounts.ClientService
 
+	Traces traces.ClientService
+
 	Workflows workflows.ClientService
 
 	Transport runtime.ClientTransport
@@ -147,11 +155,13 @@ func (c *GroundcoverAPI) SetTransport(transport runtime.ClientTransport) {
 	c.Apikeys.SetTransport(transport)
 	c.Ingestionkeys.SetTransport(transport)
 	c.K8s.SetTransport(transport)
+	c.Logs.SetTransport(transport)
 	c.LogsPipeline.SetTransport(transport)
 	c.Metrics.SetTransport(transport)
 	c.Monitors.SetTransport(transport)
 	c.Policies.SetTransport(transport)
 	c.Search.SetTransport(transport)
 	c.Serviceaccounts.SetTransport(transport)
+	c.Traces.SetTransport(transport)
 	c.Workflows.SetTransport(transport)
 }
