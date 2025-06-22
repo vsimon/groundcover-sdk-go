@@ -56,9 +56,132 @@ type ClientOption func(*runtime.ClientOperation)
 
 // ClientService is the interface for Client methods
 type ClientService interface {
+	GetMetricKeys(params *GetMetricKeysParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetMetricKeysOK, error)
+
+	GetMetricNames(params *GetMetricNamesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetMetricNamesOK, error)
+
+	GetMetricValues(params *GetMetricValuesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetMetricValuesOK, error)
+
 	MetricsQuery(params *MetricsQueryParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MetricsQueryOK, error)
 
 	SetTransport(transport runtime.ClientTransport)
+}
+
+/*
+GetMetricKeys gets keys retrieves metric keys based on the provided request parameters
+*/
+func (a *Client) GetMetricKeys(params *GetMetricKeysParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetMetricKeysOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetMetricKeysParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "getMetricKeys",
+		Method:             "POST",
+		PathPattern:        "/api/metrics/keys",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &GetMetricKeysReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetMetricKeysOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for getMetricKeys: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+GetMetricNames gets names retrieves metric names based on the provided request parameters
+*/
+func (a *Client) GetMetricNames(params *GetMetricNamesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetMetricNamesOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetMetricNamesParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "getMetricNames",
+		Method:             "POST",
+		PathPattern:        "/api/metrics/names",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &GetMetricNamesReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetMetricNamesOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for getMetricNames: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+/*
+GetMetricValues gets metric values retrieves metric values based on the provided request parameters
+*/
+func (a *Client) GetMetricValues(params *GetMetricValuesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*GetMetricValuesOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetMetricValuesParams()
+	}
+	op := &runtime.ClientOperation{
+		ID:                 "getMetricValues",
+		Method:             "POST",
+		PathPattern:        "/api/metrics/values",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http", "https"},
+		Params:             params,
+		Reader:             &GetMetricValuesReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Context:            params.Context,
+		Client:             params.HTTPClient,
+	}
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.Submit(op)
+	if err != nil {
+		return nil, err
+	}
+	success, ok := result.(*GetMetricValuesOK)
+	if ok {
+		return success, nil
+	}
+	// unexpected success response
+	// safeguard: normally, absent a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for getMetricValues: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
 }
 
 /*
