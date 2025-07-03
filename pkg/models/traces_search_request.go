@@ -44,6 +44,9 @@ type TracesSearchRequest struct {
 	// Required: true
 	// Format: date-time
 	Start *strfmt.DateTime `json:"Start"`
+
+	// TryToUseBuckets indicates if the search should be run using buckets
+	TryToUseBuckets bool `json:"TryToUseBuckets,omitempty"`
 }
 
 // Validate validates this traces search request

@@ -52,6 +52,9 @@ type BaseQuery struct {
 	// relative timerange
 	RelativeTimerange *RelativeTimerange `json:"relativeTimerange,omitempty" yaml:"relativeTimerange,omitempty"`
 
+	// rollup
+	Rollup *Rollup `json:"rollup,omitempty" yaml:"rollup,omitempty"`
+
 	// sql pipeline
 	SQLPipeline *SQLPipeline `json:"sqlPipeline,omitempty" yaml:"sqlPipeline,omitempty"`
 }
@@ -69,6 +72,10 @@ func (m *BaseQuery) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRelativeTimerange(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateRollup(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -146,6 +153,25 @@ func (m *BaseQuery) validateRelativeTimerange(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *BaseQuery) validateRollup(formats strfmt.Registry) error {
+	if swag.IsZero(m.Rollup) { // not required
+		return nil
+	}
+
+	if m.Rollup != nil {
+		if err := m.Rollup.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("rollup")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("rollup")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *BaseQuery) validateSQLPipeline(formats strfmt.Registry) error {
 	if swag.IsZero(m.SQLPipeline) { // not required
 		return nil
@@ -178,6 +204,10 @@ func (m *BaseQuery) ContextValidate(ctx context.Context, formats strfmt.Registry
 	}
 
 	if err := m.contextValidateRelativeTimerange(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRollup(ctx, formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -250,6 +280,27 @@ func (m *BaseQuery) contextValidateRelativeTimerange(ctx context.Context, format
 				return ve.ValidateName("relativeTimerange")
 			} else if ce, ok := err.(*errors.CompositeError); ok {
 				return ce.ValidateName("relativeTimerange")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *BaseQuery) contextValidateRollup(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Rollup != nil {
+
+		if swag.IsZero(m.Rollup) { // not required
+			return nil
+		}
+
+		if err := m.Rollup.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("rollup")
+			} else if ce, ok := err.(*errors.CompositeError); ok {
+				return ce.ValidateName("rollup")
 			}
 			return err
 		}
