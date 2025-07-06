@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/rehttp"
@@ -21,6 +23,7 @@ const (
 	headerUserAgent     = "User-Agent"
 	headerTraceparent   = "traceparent"
 	userAgent           = "groundcover-go-sdk"
+	yamlContentType     = "application/x-yaml"
 )
 
 const (
@@ -28,6 +31,8 @@ const (
 	minRetryWait      = 1 * time.Second
 	maxRetryWait      = 30 * time.Second
 )
+
+var getMonitorPathRegex = regexp.MustCompile(`^/api/monitors/[^/]+/?$`) // Matches /api/monitors/{id} but not /api/monitors/silences
 
 // WithRequestTraceparent returns a new context with the Traceparent override.
 func WithRequestTraceparent(ctx context.Context, traceparent string) context.Context {
@@ -112,5 +117,27 @@ func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 		newReq.Header.Set(headerTraceparent, effectiveTraceparent)
 	}
 
-	return t.retryTransport.RoundTrip(newReq)
+	// --- Fix Content-Type for specific endpoints ---
+	// Fix request Content-Type for workflow create endpoint
+	if newReq.Method == http.MethodPost && newReq.URL.Path == "/api/workflows/create" {
+		newReq.Header.Set("Content-Type", "text/plain")
+	}
+
+	// Execute the request
+	resp, err := t.retryTransport.RoundTrip(newReq)
+	if err != nil {
+		return nil, err
+	}
+
+	// Fix response Content-Type for monitor GET endpoints
+	if newReq.Method == http.MethodGet && resp.StatusCode == http.StatusOK &&
+		getMonitorPathRegex.MatchString(newReq.URL.Path) &&
+		!strings.Contains(newReq.URL.Path, "silences") {
+		contentType := resp.Header.Get("Content-Type")
+		if contentType == "" || !strings.HasPrefix(contentType, yamlContentType) {
+			resp.Header.Set("Content-Type", yamlContentType)
+		}
+	}
+
+	return resp, nil
 }
