@@ -30,35 +30,25 @@ Optionally, you can set:
 
 ### Client Initialization
 
-The SDK client requires a configured transport stack that handles authentication, retries, and other custom behaviors. Here's an example of how to set up the client:
+The SDK provides simple functions to create a fully configured client with all necessary features (authentication, retries and other options) automatically included.
+
+#### Simple Client Creation (Recommended)
+
+For most use cases, you can create a client with minimal code:
 
 ```go
 package main
 
 import (
 	"log"
-	"net/http"
-	"net/url"
 	"os"
-	"strings"
-	"time"
 
-	"github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/strfmt"
-	oapiClient "github.com/groundcover-com/groundcover-sdk-go/pkg/client"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/transport"
 )
 
-const (
-	defaultTimeout    = 30 * time.Second
-	defaultRetryCount = 5
-	minRetryWait      = 1 * time.Second
-	maxRetryWait      = 5 * time.Second
-)
-
 func main() {
-	baseURLStr := os.Getenv("GC_BASE_URL")
-	if baseURLStr == "" {
+	baseURL := os.Getenv("GC_BASE_URL")
+	if baseURL == "" {
 		log.Fatal("GC_BASE_URL environment variable is required")
 	}
 
@@ -72,58 +62,62 @@ func main() {
 		log.Fatal("GC_BACKEND_ID environment variable is required")
 	}
 
-	traceparent := os.Getenv("GC_TRACEPARENT") // Optional, applied to context if set
-
-	// Parse baseURL for go-openapi transport config
-	parsedURL, err := url.Parse(baseURLStr)
+	// Create a fully configured client - handles auth, retries, content-type fixes, etc.
+	sdkClient, err := transport.NewSDKClient(apiKey, backendID, baseURL)
 	if err != nil {
-		log.Fatalf("Error parsing GC_BASE_URL: %v", err)
+		log.Fatalf("Failed to create SDK client: %v", err)
 	}
-
-	host := parsedURL.Host
-	basePath := parsedURL.Path
-	if basePath == "" {
-		basePath = oapiClient.DefaultBasePath // Use default if path is empty
-	}
-	if !strings.HasPrefix(basePath, "/") && basePath != "" {
-		basePath = "/" + basePath
-	}
-
-	schemes := []string{parsedURL.Scheme}
-	if len(schemes) == 0 || schemes[0] == "" {
-		schemes = oapiClient.DefaultSchemes // Use default if scheme is missing
-	}
-
-	// --- Transport Stack Construction ---
-
-	// 1. Base HTTP Transport (from go's net/http)
-	baseHttpTransport := &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-		// Configure other standard transport settings if needed (e.g., TLS, timeouts)
-	}
-
-	// 2. Custom Transport (handles auth, Gzip, retries)
-	//    The retry logic is built into NewTransport.
-	transportWrapper := transport.NewTransport(
-		apiKey,
-		backendID,
-		baseHttpTransport, // The underlying transport
-		defaultRetryCount, // Max number of retries
-		minRetryWait,      // Minimum wait time between retries
-		maxRetryWait,      // Maximum wait time between retries
-		// Specify statuses to retry on, or pass nil/empty for defaults
-		[]int{http.StatusServiceUnavailable, http.StatusTooManyRequests, http.StatusGatewayTimeout, http.StatusBadGateway},
-	)
-
-	// 3. Final OpenAPI Runtime Transport
-	finalRuntimeTransport := client.New(host, basePath, schemes)
-	finalRuntimeTransport.Transport = transportWrapper // Set our custom transport
-
-	// --- Client Initialization ---
-	sdkClient := oapiClient.New(finalRuntimeTransport, strfmt.Default)
 
 	// Now you can use sdkClient to make API calls
 	// Example: sdkClient.Metrics.MetricsQuery(...)
+}
+```
+
+#### Client Creation with Custom Settings
+
+If you need custom retry settings or HTTP transport:
+
+```go
+package main
+
+import (
+	"log"
+	"net/http"
+	"os"
+	"time"
+
+	"github.com/groundcover-com/groundcover-sdk-go/pkg/transport"
+)
+
+func main() {
+	baseURL := os.Getenv("GC_BASE_URL")
+	apiKey := os.Getenv("GC_API_KEY")
+	backendID := os.Getenv("GC_BACKEND_ID")
+
+	// Custom HTTP transport (optional)
+	customTransport := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		// Add any custom transport settings here
+	}
+
+	// Create client with custom settings using options
+	sdkClient, err := transport.NewSDKClient(
+		apiKey,
+		backendID,
+		baseURL,
+		transport.WithHTTPTransport(customTransport),
+		transport.WithRetryConfig(
+			3,                    // retry count
+			1*time.Second,        // min wait
+			10*time.Second,       // max wait
+			[]int{http.StatusServiceUnavailable, http.StatusTooManyRequests},
+		),
+	)
+	if err != nil {
+		log.Fatalf("Failed to create SDK client: %v", err)
+	}
+
+	// Client is ready to use
 }
 ```
 

@@ -8,14 +8,10 @@ import (
 	"io"
 	"net/http"
 	"net/http/httputil"
-	"net/url"
 	"os"
 	"strings"
 	"testing"
 	"time"
-
-	httptransport "github.com/go-openapi/runtime/client"
-	"github.com/go-openapi/strfmt"
 
 	client "github.com/groundcover-com/groundcover-sdk-go/pkg/client"
 	"github.com/groundcover-com/groundcover-sdk-go/pkg/transport"
@@ -90,43 +86,6 @@ func (d *DebugTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return resp, err // Return the original transport error
 }
 
-// --- Custom YAML Consumer ---
-
-// yamlByteConsumer consumes application/x-yaml as raw bytes
-type yamlByteConsumer struct{}
-
-// Consume reads the response body directly into data without YAML parsing.
-// It expects 'data' to be a pointer to a []byte or similar slice type.
-func (c *yamlByteConsumer) Consume(reader io.Reader, data interface{}) error {
-	buf, err := io.ReadAll(reader)
-	if err != nil {
-		return err
-	}
-
-	// Check if data is a pointer to []byte or *[]byte
-	byteSlicePtr, ok := data.(*[]byte)
-	if !ok {
-		// Also handle *strfmt.Base64, which is essentially *[]byte
-		base64Ptr, ok := data.(*strfmt.Base64)
-		if !ok {
-			// Fallback: Try assigning to []uint8 if that's the underlying type
-			uint8SlicePtr, ok := data.(*[]uint8)
-			if !ok {
-				return fmt.Errorf("yamlByteConsumer requires data to be *[]byte, *[]uint8, or *strfmt.Base64, got %T for content type %s", data, YamlContentType)
-			}
-			*uint8SlicePtr = buf
-			return nil
-		}
-		*base64Ptr = buf
-		return nil
-	}
-
-	*byteSlicePtr = buf
-	return nil
-}
-
-// --- End Custom YAML Consumer ---
-
 // TestClient holds the client and context for testing
 type TestClient struct {
 	Client  *client.GroundcoverAPI
@@ -181,73 +140,49 @@ func NewTestClient(t *testing.T, options ...TestClientOption) *TestClient {
 	}
 	t.Logf("TraceID: %s", extractTraceID(traceparent))
 
-	// Parse baseURL for go-openapi transport config
-	parsedURL, err := url.Parse(baseURLStr)
-	if err != nil {
-		t.Fatalf("Error parsing GC_BASE_URL: %v", err)
-	}
-
-	host := parsedURL.Host
-	basePath := parsedURL.Path
-	if basePath == "" {
-		basePath = client.DefaultBasePath
-	}
-	if !strings.HasPrefix(basePath, "/") && basePath != "" {
-		basePath = "/" + basePath
-	}
-
-	schemes := []string{parsedURL.Scheme}
-	if len(schemes) == 0 || schemes[0] == "" {
-		schemes = client.DefaultSchemes
-	}
-
-	// Log detailed client configuration if debugging is enabled
-	if debug {
-		t.Logf("SDK Client Configuration:")
-		t.Logf("- Host: %s", host)
-		t.Logf("- Base Path: %s", basePath)
-		t.Logf("- Schemes: %v", schemes)
-		t.Logf("- Default BasePath: %s", client.DefaultBasePath)
-		t.Logf("- Default Schemes: %v", client.DefaultSchemes)
-	}
-
-	// Transport setup
+	// Create SDK client with all configurations handled automatically
 	baseHttpTransport := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 	}
 
-	transportWrapper := transport.NewTransport(
-		apiKey,
-		opts.backendID,
-		baseHttpTransport,
+	// Create debug transport wrapper if enabled
+	var debugWrapper func(http.RoundTripper) http.RoundTripper
+	if debug {
+		debugWrapper = func(transport http.RoundTripper) http.RoundTripper {
+			return &DebugTransport{
+				transport: transport,
+				testing:   t,
+			}
+		}
+	}
+
+	// Create the client - this automatically includes content-type fixes and YAML consumer
+	var clientOptions []transport.ClientOption
+
+	// Add HTTP transport option
+	clientOptions = append(clientOptions, transport.WithHTTPTransport(baseHttpTransport))
+
+	// Add retry config option
+	clientOptions = append(clientOptions, transport.WithRetryConfig(
 		defaultRetryCount,
 		minRetryWait,
 		maxRetryWait,
 		[]int{http.StatusServiceUnavailable, http.StatusTooManyRequests, http.StatusGatewayTimeout, http.StatusBadGateway},
-	)
+	))
 
-	// Wrap with debug transport if enabled
-	finalTransportLayer := http.RoundTripper(transportWrapper)
-	if debug {
-		finalTransportLayer = &DebugTransport{
-			transport: transportWrapper,
-			testing:   t,
-		}
+	// Add debug wrapper if enabled
+	if debugWrapper != nil {
+		clientOptions = append(clientOptions, transport.WithTransportWrapper(debugWrapper))
 	}
 
-	finalRuntimeTransport := httptransport.New(host, basePath, schemes)
-	finalRuntimeTransport.Transport = finalTransportLayer
-
-	// --- Register Custom Consumer ---
-	// Add our custom consumer for YAML content type to prevent default parsing
-	finalRuntimeTransport.Consumers[YamlContentType] = &yamlByteConsumer{}
-	if debug {
-		t.Logf("Registered custom YAML consumer for %s", YamlContentType)
+	sdkClient, err := transport.NewSDKClient(apiKey, opts.backendID, baseURLStr, clientOptions...)
+	if err != nil {
+		t.Fatalf("Failed to create SDK client: %v", err)
 	}
-	// --- End Register Custom Consumer ---
 
-	// Create client
-	sdkClient := client.New(finalRuntimeTransport, strfmt.Default)
+	if debug {
+		t.Logf("Created SDK client with automatic YAML consumer and content-type fixes")
+	}
 
 	// Create base context
 	baseCtx := context.Background()
@@ -278,14 +213,6 @@ func setupTestClient(t *testing.T, options ...TestClientOption) (context.Context
 	return tc.BaseCtx, tc.Client
 }
 
-// this is a helper function to create the required env variables for NewTestClient() by code in your test (don't commit the apikey :-))
-func createEnvVariablesForTest(apiUrl, apiKey, backendId, traceparent string) {
-	os.Setenv("GC_BASE_URL", apiUrl)
-	os.Setenv("GC_API_KEY", apiKey)
-	os.Setenv("GC_BACKEND_ID", backendId)
-	os.Setenv("GC_TRACEPARENT", traceparent)
-}
-
 func generateTraceParent() string {
 	// Generate 16 random bytes for the first hex section (32 hex chars)
 	part1 := make([]byte, 16)
@@ -306,4 +233,12 @@ func extractTraceID(traceParent string) string {
 		return parts[1]
 	}
 	return ""
+}
+
+// this is a helper function to create the required env variables for NewTestClient() by code in your test (don't commit the apikey :-))
+func createEnvVariablesForTest(apiUrl, apiKey, backendId, traceparent string) {
+	os.Setenv("GC_BASE_URL", apiUrl)
+	os.Setenv("GC_API_KEY", apiKey)
+	os.Setenv("GC_BACKEND_ID", backendId)
+	os.Setenv("GC_TRACEPARENT", traceparent)
 }
