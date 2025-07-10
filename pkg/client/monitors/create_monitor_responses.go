@@ -38,6 +38,12 @@ func (o *CreateMonitorReader) ReadResponse(response runtime.ClientResponse, cons
 			return nil, err
 		}
 		return nil, result
+	case 403:
+		result := NewCreateMonitorForbidden()
+		if err := result.readResponse(response, consumer, o.formats); err != nil {
+			return nil, err
+		}
+		return nil, result
 	case 409:
 		result := NewCreateMonitorConflict()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -195,6 +201,76 @@ func (o *CreateMonitorBadRequest) readResponse(response runtime.ClientResponse, 
 	return nil
 }
 
+// NewCreateMonitorForbidden creates a CreateMonitorForbidden with default headers values
+func NewCreateMonitorForbidden() *CreateMonitorForbidden {
+	return &CreateMonitorForbidden{}
+}
+
+/*
+CreateMonitorForbidden describes a response with status code 403, with default header values.
+
+ErrorResponse defines a common error response structure.
+*/
+type CreateMonitorForbidden struct {
+	Payload *CreateMonitorForbiddenBody
+}
+
+// IsSuccess returns true when this create monitor forbidden response has a 2xx status code
+func (o *CreateMonitorForbidden) IsSuccess() bool {
+	return false
+}
+
+// IsRedirect returns true when this create monitor forbidden response has a 3xx status code
+func (o *CreateMonitorForbidden) IsRedirect() bool {
+	return false
+}
+
+// IsClientError returns true when this create monitor forbidden response has a 4xx status code
+func (o *CreateMonitorForbidden) IsClientError() bool {
+	return true
+}
+
+// IsServerError returns true when this create monitor forbidden response has a 5xx status code
+func (o *CreateMonitorForbidden) IsServerError() bool {
+	return false
+}
+
+// IsCode returns true when this create monitor forbidden response a status code equal to that given
+func (o *CreateMonitorForbidden) IsCode(code int) bool {
+	return code == 403
+}
+
+// Code gets the status code for the create monitor forbidden response
+func (o *CreateMonitorForbidden) Code() int {
+	return 403
+}
+
+func (o *CreateMonitorForbidden) Error() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /api/monitors][%d] createMonitorForbidden %s", 403, payload)
+}
+
+func (o *CreateMonitorForbidden) String() string {
+	payload, _ := json.Marshal(o.Payload)
+	return fmt.Sprintf("[POST /api/monitors][%d] createMonitorForbidden %s", 403, payload)
+}
+
+func (o *CreateMonitorForbidden) GetPayload() *CreateMonitorForbiddenBody {
+	return o.Payload
+}
+
+func (o *CreateMonitorForbidden) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
+
+	o.Payload = new(CreateMonitorForbiddenBody)
+
+	// response payload
+	if err := consumer.Consume(response.Body(), o.Payload); err != nil && err != io.EOF {
+		return err
+	}
+
+	return nil
+}
+
 // NewCreateMonitorConflict creates a CreateMonitorConflict with default headers values
 func NewCreateMonitorConflict() *CreateMonitorConflict {
 	return &CreateMonitorConflict{}
@@ -273,7 +349,7 @@ func NewCreateMonitorInternalServerError() *CreateMonitorInternalServerError {
 /*
 CreateMonitorInternalServerError describes a response with status code 500, with default header values.
 
-NoContentResponse indicates success but that no response body is expected or included.
+CreateMonitorInternalServerError create monitor internal server error
 */
 type CreateMonitorInternalServerError struct {
 }
@@ -390,6 +466,44 @@ func (o *CreateMonitorConflictBody) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (o *CreateMonitorConflictBody) UnmarshalBinary(b []byte) error {
 	var res CreateMonitorConflictBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
+}
+
+/*
+CreateMonitorForbiddenBody create monitor forbidden body
+swagger:model CreateMonitorForbiddenBody
+*/
+type CreateMonitorForbiddenBody struct {
+
+	// message
+	Message string `json:"message,omitempty"`
+}
+
+// Validate validates this create monitor forbidden body
+func (o *CreateMonitorForbiddenBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this create monitor forbidden body based on context it is used
+func (o *CreateMonitorForbiddenBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *CreateMonitorForbiddenBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *CreateMonitorForbiddenBody) UnmarshalBinary(b []byte) error {
+	var res CreateMonitorForbiddenBody
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}
