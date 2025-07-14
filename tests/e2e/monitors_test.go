@@ -25,6 +25,16 @@ type MonitorYAMLWithSeverity struct {
 	Severity string `yaml:"severity"`
 }
 
+// MonitorYAMLWithEvaluation represents a YAML monitor definition with evaluation interval
+type MonitorYAMLWithEvaluation struct {
+	Title              string `yaml:"title"`
+	Severity           string `yaml:"severity"`
+	EvaluationInterval struct {
+		Interval   string `yaml:"interval"`
+		PendingFor string `yaml:"pendingFor"`
+	} `yaml:"evaluationInterval"`
+}
+
 func TestMonitorsEndpoints(t *testing.T) {
 	// Log the base URL to verify it's correct
 	t.Logf("Using base URL: %s", os.Getenv("GC_BASE_URL"))
@@ -79,7 +89,7 @@ executionErrorState: OK
 noDataState: OK
 evaluationInterval:
   interval: 1m
-  pendingFor: 5m`
+  pendingFor: 0s`
 
 		// Unmarshal the YAML into a struct
 		monitor := &models.CreateMonitorRequest{}
@@ -118,8 +128,18 @@ evaluationInterval:
 		err = yaml.Unmarshal(getResp.Payload, &receivedMonitor)
 		require.NoError(t, err, "Failed to unmarshal get monitor response YAML")
 
+		// Also unmarshal with evaluation interval details
+		var receivedMonitorWithEval MonitorYAMLWithEvaluation
+		err = yaml.Unmarshal(getResp.Payload, &receivedMonitorWithEval)
+		require.NoError(t, err, "Failed to unmarshal get monitor response YAML with evaluation interval")
+
 		// Assertions on the received monitor
 		require.Equal(t, *monitor.Title, receivedMonitor.Title, "Monitor title mismatch after get")
+
+		// Check if pendingFor is preserved as 0s
+		if receivedMonitorWithEval.EvaluationInterval.PendingFor != "0s" {
+			t.Errorf("Expected pendingFor to be '0s', but got: '%s'", receivedMonitorWithEval.EvaluationInterval.PendingFor)
+		}
 
 		// --- Update the monitor ---
 

@@ -6,7 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"context"
+"context"
+	"time"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -25,7 +26,7 @@ type EvaluationInterval struct {
 
 	// pending for
 	// Format: duration
-	PendingFor strfmt.Duration `json:"pendingFor,omitempty" yaml:"pendingFor,omitempty"`
+	PendingFor *Duration `json:"pendingFor,omitempty" yaml:"pendingFor,omitempty"`
 }
 
 // Validate validates this evaluation interval
@@ -63,7 +64,8 @@ func (m *EvaluationInterval) validatePendingFor(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.FormatOf("pendingFor", "body", "duration", m.PendingFor.String(), formats); err != nil {
+		durationStr := time.Duration(*m.PendingFor).String()
+	if err := validate.FormatOf("pendingFor", "body", "duration", durationStr, formats); err != nil {
 		return err
 	}
 
